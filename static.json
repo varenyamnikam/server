@@ -1,0 +1,8 @@
+{
+  "root": "build/",
+  "clean_urls": false,
+  "routes": {
+    "/**": "index.html"
+  },
+  "error_page": "client/build/public/index.html"
+}
