@@ -93,20 +93,56 @@ router.post("/", (req, res) => {
                                 if (err) {
                                   res.send({ err: err });
                                 } else {
-                                  user.defaultBranchName =
-                                    dBranch[0].branchName;
-                                  res.send({
-                                    auth: true,
-                                    token: token,
-                                    result: result,
-                                    userName: userName,
-                                    userCompanyCode: userCompanyCode,
-                                    adm_userrights: adm_userrights,
-                                    userCompanyName: cmpny[0].companyName,
-                                    userCode: userCode,
-                                    user: user,
-                                    Status: user.Status,
-                                  });
+                                  database
+                                    .collection("adm_softwareSettings")
+                                    .findOne(
+                                      {
+                                        userCompanyCode: userCompanyCode,
+                                      },
+                                      function (err, adm_softwareSettings) {
+                                        if (err) {
+                                          res.send({ err: err });
+                                        } else {
+                                          database
+                                            .collection("adm_company")
+                                            .findOne(
+                                              {
+                                                companyCode: userCompanyCode,
+                                              },
+                                              function (err, company) {
+                                                if (err) {
+                                                  res.send({ err: err });
+                                                } else {
+                                                  user.defaultBranchName =
+                                                    dBranch[0].branchName;
+                                                  console.log(
+                                                    adm_softwareSettings
+                                                  );
+                                                  console.log(company);
+                                                  res.send({
+                                                    auth: true,
+                                                    token: token,
+                                                    result: result,
+                                                    userName: userName,
+                                                    userCompanyCode:
+                                                      userCompanyCode,
+                                                    adm_userrights:
+                                                      adm_userrights,
+                                                    userCompanyName:
+                                                      cmpny[0].companyName,
+                                                    userCode: userCode,
+                                                    user: user,
+                                                    Status: user.Status,
+                                                    adm_softwareSettings:
+                                                      adm_softwareSettings,
+                                                    company: company,
+                                                  });
+                                                }
+                                              }
+                                            );
+                                        }
+                                      }
+                                    );
                                 }
                               });
                           }

@@ -57,7 +57,10 @@ const mst_acadress = require("./routes/mst_acadress");
 const mst_paymentTerms = require("./routes/mst_paymentTerms");
 const mst_mktArea = require("./routes/mst_mktArea");
 const register = require("./routes/Register");
-const inv_dc = require("./routes/inv_dc");
+const inv_stockOnly = require("./routes/inv_stockOnly");
+const inv_ledgerOnly = require("./routes/inv_ledgerOnly");
+const inv_both = require("./routes/inv_both");
+
 const soft = require("./routes/soft");
 
 app.use("/register", register);
@@ -77,7 +80,9 @@ app.use("/mst_acgl", mst_acgl);
 app.use("/mst_acadress", mst_acadress);
 app.use("/mst_paymentTerms", mst_paymentTerms);
 app.use("/mst_mktArea", mst_mktArea);
-app.use("/inv_dc", inv_dc);
+app.use("/inv_dc", inv_stockOnly);
+app.use("/inv_ledger", inv_ledgerOnly);
+app.use("/inv_both", inv_both);
 app.use("/soft", soft);
 
 // app.post("/adm_userrole", verifyToken, (req, res) => {
