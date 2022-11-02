@@ -36,10 +36,6 @@ if ((process.env.NODE_ENV = "production")) {
 //     res.sendFile(path.resolve(_dirname, "client", "build", "index.html"));
 //   });
 // }
-// app.get("/home", (req, res) => {
-//   console.log("get req at home");
-//   app.use(express.static("client/build"));
-// });
 const userMasterRoute = require("./routes/userMaster");
 const login = require("./routes/login");
 const adm_finYear = require("./routes/adm_finYear");
