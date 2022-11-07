@@ -36,6 +36,10 @@ if ((process.env.NODE_ENV = "production")) {
 //     res.sendFile(path.resolve(_dirname, "client", "build", "index.html"));
 //   });
 // }
+// app.get("/home", (req, res) => {
+//   console.log("get req at home");
+//   app.use(express.static("client/build"));
+// });
 const userMasterRoute = require("./routes/userMaster");
 const login = require("./routes/login");
 const adm_finYear = require("./routes/adm_finYear");
@@ -59,27 +63,27 @@ const inv_both = require("./routes/inv_both");
 
 const soft = require("./routes/soft");
 
-app.use("/register", register);
-app.use("/login", login);
-app.use("/adm_finYear", adm_finYear);
-app.use("/adm_userrole", adm_userrole);
-app.use("/adm_userrights", adm_userrights);
-app.use("/adm_branch", adm_branch);
-app.use("/adm_usermaster", userMasterRoute);
-app.use("/mst_unit", mst_unit);
-app.use("/mst_prodCompany", mst_prodCompany);
-app.use("/mst_prodTypes", mst_prodTypes);
-app.use("/mst_prodMaster", mst_prodMaster);
-app.use("/mst_accounts", mst_accounts);
-app.use("/mst_acglgroup", mst_acglgroup);
-app.use("/mst_acgl", mst_acgl);
-app.use("/mst_acadress", mst_acadress);
-app.use("/mst_paymentTerms", mst_paymentTerms);
-app.use("/mst_mktArea", mst_mktArea);
-app.use("/inv_dc", inv_stockOnly);
-app.use("/inv_ledger", inv_ledgerOnly);
-app.use("/inv_both", inv_both);
-app.use("/soft", soft);
+app.use("/api/register", register);
+app.use("/api/login", login);
+app.use("/api/adm_finYear", adm_finYear);
+app.use("/api/adm_userrole", adm_userrole);
+app.use("/api/adm_userrights", adm_userrights);
+app.use("/api/adm_branch", adm_branch);
+app.use("/api/adm_usermaster", userMasterRoute);
+app.use("/api/mst_unit", mst_unit);
+app.use("/api/mst_prodCompany", mst_prodCompany);
+app.use("/api/mst_prodTypes", mst_prodTypes);
+app.use("/api/mst_prodMaster", mst_prodMaster);
+app.use("/api/mst_accounts", mst_accounts);
+app.use("/api/mst_acglgroup", mst_acglgroup);
+app.use("/api/mst_acgl", mst_acgl);
+app.use("/api/mst_acadress", mst_acadress);
+app.use("/api/mst_paymentTerms", mst_paymentTerms);
+app.use("/api/mst_mktArea", mst_mktArea);
+app.use("/api/inv_dc", inv_stockOnly);
+app.use("/api/inv_ledger", inv_ledgerOnly);
+app.use("/api/inv_both", inv_both);
+app.use("/api/soft", soft);
 
 // app.post("/adm_userrole", verifyToken, (req, res) => {
 //   database
