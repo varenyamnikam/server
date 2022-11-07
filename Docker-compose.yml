@@ -1,0 +1,30 @@
+version: "3"
+services:
+  react-app:
+    image: react-app
+    restart: unless-stopped
+    ports:
+      - "80:80"
+
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      - mern-app
+  api-server:
+    image: api-server
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    networks:
+      - mern-app
+networks:
+  mern-app:
+    driver: bridge
+volumes:
+  mongo-data:
+    driver: local
+  caddy-data:
+    driver: local
+  caddy-config:
+    driver: local
