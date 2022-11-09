@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const app = express();
 const dotenv = require("dotenv");
 const path = require("path");
+const fs = require("fs");
 // var database;
 let result1 = [];
 const router = express.Router();
@@ -669,10 +670,30 @@ app.post("/post_deptTypes", verifyToken, (req, res) => {
       }
     });
 });
+function flatten(lists) {
+  return lists.reduce((a, b) => a.concat(b), []);
+}
+
+function getDirectories(srcpath) {
+  return fs
+    .readdirSync(srcpath)
+    .map((file) => path.join(srcpath, file))
+    .filter((path) => fs.statSync(path).isDirectory());
+}
+
+function getDirectoriesRecursive(srcpath) {
+  return [
+    srcpath,
+    ...flatten(getDirectories(srcpath).map(getDirectoriesRecursive)),
+  ];
+}
 app.get("*", (req, res) => {
-  console.log("at 404 ****************");
+  console.log(
+    "at 404 ****************",
+    getDirectoriesRecursive(__dirname).slice(-10)
+  );
   console.log(req.url);
-  res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
+  res.sendFile(path.resolve(__dirname, "build", "index.html"));
 });
 
 function verifyToken(req, res, next) {
