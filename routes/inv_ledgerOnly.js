@@ -378,7 +378,7 @@ router.patch("/", verifyToken, (req, res) => {
   const userCompanyCode = req.query.userCompanyCode;
   const userCode = req.query.userCode;
   console.log(userCode);
-  let values = req.body.input;
+  let values = req.body.obj.input;
   delete values._id;
   values.partyName = "";
   values.billingAdress = "";

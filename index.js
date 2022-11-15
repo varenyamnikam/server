@@ -61,7 +61,7 @@ const register = require("./routes/Register");
 const inv_stockOnly = require("./routes/inv_stockOnly");
 const inv_ledgerOnly = require("./routes/inv_ledgerOnly");
 const inv_both = require("./routes/inv_both");
-
+const inv_batch = require("./routes/inv_batch");
 const soft = require("./routes/soft");
 
 app.use("/api/register", register);
@@ -85,8 +85,9 @@ app.use("/api/inv_dc", inv_stockOnly);
 app.use("/api/inv_ledger", inv_ledgerOnly);
 app.use("/api/inv_both", inv_both);
 app.use("/api/soft", soft);
+app.use("/api/batch", inv_batch);
 
-// app.post("/adm_userrole", verifyToken, (req, res) => {
+// app.post("/api/adm_userrole", verifyToken, (req, res) => {
 //   database
 //     .collection("adm_userrole")
 //     .find({})
@@ -112,7 +113,7 @@ app.use("/api/soft", soft);
 //     });
 // });
 
-// app.post("/post_userrole", verifyToken, (req, res) => {
+// app.post("/api/post_userrole", verifyToken, (req, res) => {
 //   const roleCode = req.body.roleCode;
 //   const roleName = req.body.roleName;
 
@@ -318,7 +319,7 @@ app.use("/api/soft", soft);
 //       }
 //     });
 // });
-app.post("/post_location", verifyToken, (req, res) => {
+app.post("/api/post_location", verifyToken, (req, res) => {
   const userCompanyCode = req.query.userCompanyCode;
   console.log("/post_location");
   database
@@ -372,7 +373,7 @@ app.post("/post_location", verifyToken, (req, res) => {
       }
     });
 });
-app.post("/post_addbranch", verifyToken, (req, res) => {
+app.post("/api/post_addbranch", verifyToken, (req, res) => {
   const values = req.body.values;
   database
     .collection("adm_branch")
@@ -418,7 +419,7 @@ app.post("/post_addbranch", verifyToken, (req, res) => {
       }
     });
 });
-app.post("/post_deletebranch", verifyToken, (req, res) => {
+app.post("/api/post_deletebranch", verifyToken, (req, res) => {
   const values = req.body.values;
   const branchCode = values.branchCode;
   database
@@ -431,7 +432,7 @@ app.post("/post_deletebranch", verifyToken, (req, res) => {
       }
     });
 });
-app.post("/post_updatebranch", verifyToken, (req, res) => {
+app.post("/api/post_updatebranch", verifyToken, (req, res) => {
   const values = req.body.values;
   const branchCode = values.branchCode;
   console.log(values);
@@ -450,7 +451,7 @@ app.post("/post_updatebranch", verifyToken, (req, res) => {
     }
   );
 });
-app.post("/post_addlocation", verifyToken, (req, res) => {
+app.post("/api/post_addlocation", verifyToken, (req, res) => {
   console.log("/post_addlocation ");
 
   const values = req.body.values;
@@ -526,7 +527,7 @@ app.post("/post_addlocation", verifyToken, (req, res) => {
     );
   }
 });
-app.post("/post_marketarea", verifyToken, (req, res) => {
+app.post("/api/post_marketarea", verifyToken, (req, res) => {
   console.log("post request recieved at post_marketarea");
   database
     .collection("mst_accounts")
@@ -539,7 +540,7 @@ app.post("/post_marketarea", verifyToken, (req, res) => {
       }
     });
 });
-app.post("/post_acGlGroup", verifyToken, (req, res) => {
+app.post("/api/post_acGlGroup", verifyToken, (req, res) => {
   console.log("post request recieved at /post_acGlGroup");
   database
     .collection("mst_acglgroup")
@@ -552,7 +553,7 @@ app.post("/post_acGlGroup", verifyToken, (req, res) => {
       }
     });
 });
-app.post("/post_acGl", verifyToken, (req, res) => {
+app.post("/api/post_acGl", verifyToken, (req, res) => {
   console.log("post request recieved at /post_acGl");
   database
     .collection("mst_acgl")
@@ -565,7 +566,7 @@ app.post("/post_acGl", verifyToken, (req, res) => {
       }
     });
 });
-app.post("/post_addAcGlGroup", verifyToken, (req, res) => {
+app.post("/api/post_addAcGlGroup", verifyToken, (req, res) => {
   const values = req.body;
   console.log(values);
   database.collection("mst_acglgroup").insertOne({ ...values }, (err, data) => {
@@ -577,7 +578,7 @@ app.post("/post_addAcGlGroup", verifyToken, (req, res) => {
     }
   });
 });
-app.post("/post_accounts", verifyToken, (req, res) => {
+app.post("/api/post_accounts", verifyToken, (req, res) => {
   console.log("post request recieved at /post_accounts");
   database
     .collection("mst_accounts")
@@ -590,7 +591,7 @@ app.post("/post_accounts", verifyToken, (req, res) => {
       }
     });
 });
-app.post("/post_mktArea", verifyToken, (req, res) => {
+app.post("/api/post_mktArea", verifyToken, (req, res) => {
   console.log("post request recieved at post_mktArea");
   database
     .collection("mst_mktArea")
@@ -603,7 +604,7 @@ app.post("/post_mktArea", verifyToken, (req, res) => {
       }
     });
 });
-app.post("/post_acadress", verifyToken, (req, res) => {
+app.post("/api/post_acadress", verifyToken, (req, res) => {
   console.log("post request recieved at /post_acadress");
   database
     .collection("mst_acadress")
@@ -616,7 +617,7 @@ app.post("/post_acadress", verifyToken, (req, res) => {
       }
     });
 });
-app.post("/post_addacadress", verifyToken, (req, res) => {
+app.post("/api/post_addacadress", verifyToken, (req, res) => {
   const values = req.body;
   // database.collection("mst_acadress").insertOne({ ...values }, (err, data) => {
   //   if (err) {
@@ -644,7 +645,7 @@ app.post("/post_addacadress", verifyToken, (req, res) => {
     );
 });
 
-app.post("/post_acTypes", verifyToken, (req, res) => {
+app.post("/api/post_acTypes", verifyToken, (req, res) => {
   console.log("post request recieved at /post_acadress");
   database
     .collection("mst_acTypes")
@@ -657,7 +658,7 @@ app.post("/post_acTypes", verifyToken, (req, res) => {
       }
     });
 });
-app.post("/post_deptTypes", verifyToken, (req, res) => {
+app.post("/api/post_deptTypes", verifyToken, (req, res) => {
   console.log("post request recieved at /post_acadress");
   database
     .collection("mst_dept")

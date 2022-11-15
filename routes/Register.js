@@ -187,6 +187,29 @@ router.post("/", verifyToken, (req, res) => {
       }
     });
 });
+router.patch("/", verifyToken, (req, res) => {
+  console.log("at patch delete of /register*******");
+  const userCompanyCode = req.query.userCompanyCode;
+  const userCode = req.query.userCode;
+  const values = req.body.values;
+  console.log(values);
+  delete values._id;
+  database.collection("adm_company").updateOne(
+    {
+      companyCode: userCompanyCode,
+    },
+    { $set: { ...values } },
+    (err, data) => {
+      if (err) {
+        res.send({ err: err });
+      } else {
+        res.send({
+          msg: "entry deleted successfully",
+        });
+      }
+    }
+  );
+});
 
 module.exports = router;
 

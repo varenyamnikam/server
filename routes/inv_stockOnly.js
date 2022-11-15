@@ -23,7 +23,7 @@ router.get("/", verifyToken, (req, res) => {
   const userCode = req.query.userCode;
   const date = req.query.date;
   const docCode = req.query.docCode;
-  console.log("post request recieved at get dc", date);
+  console.log("get request recieved at get dc(stockonly)", date);
   database
     .collection("mst_accounts")
     .find({ userCompanyCode: userCompanyCode })
@@ -121,6 +121,8 @@ router.put("/", verifyToken, (req, res) => {
   console.log("at put of /inv_voucher*******");
   const userCompanyCode = req.query.userCompanyCode;
   const userCode = req.query.userCode;
+  const useBatch = req.query.useBatch;
+
   const values = req.body.obj.input;
   const date = req.body.obj.date;
   console.log(userCompanyCode, typeof values.vouDate, new Date(date));
@@ -199,16 +201,32 @@ router.put("/", verifyToken, (req, res) => {
                       if (values.docCode == "DC" || values.docCode == "GR") {
                         const stockItems = newItems.map((item) => {
                           if (item.docCode == "DC") {
-                            return {
-                              userCompanyCode: userCompanyCode,
-                              prodCode: item.prodCode,
-                              batchNo: item.batchNo,
-                              inwardQty: "",
-                              outwardQty: item.qty,
-                              rate: item.rate,
-                              refType: values.docCode,
-                              refNo: values.vouNo + max,
-                            };
+                            if (useBatch == "Yes") {
+                              console.log(item.batchList);
+                              return item.batchList.map((b) => {
+                                return {
+                                  userCompanyCode: userCompanyCode,
+                                  prodCode: item.prodCode,
+                                  batchNo: b.batchNo,
+                                  inwardQty: "",
+                                  outwardQty: b.sell,
+                                  rate: item.rate,
+                                  refType: values.docCode,
+                                  refNo: values.vouNo + max,
+                                };
+                              });
+                            } else {
+                              return {
+                                userCompanyCode: userCompanyCode,
+                                prodCode: item.prodCode,
+                                batchNo: item.batchNo,
+                                inwardQty: "",
+                                outwardQty: item.qty,
+                                rate: item.rate,
+                                refType: values.docCode,
+                                refNo: values.vouNo + max,
+                              };
+                            }
                           } else if (item.docCode == "GR") {
                             return {
                               userCompanyCode: userCompanyCode,
@@ -222,10 +240,10 @@ router.put("/", verifyToken, (req, res) => {
                             };
                           }
                         });
-                        console.log(stockItems);
+                        console.log("hi**", stockItems);
                         database
                           .collection("inv_stockLedger")
-                          .insertMany(stockItems, (err, data) => {
+                          .insertMany(stockItems.flat(), (err, data) => {
                             if (err) {
                               res.send({ err: err });
                               console.log("error!", err);
@@ -254,8 +272,12 @@ router.patch("/", verifyToken, (req, res) => {
   console.log("at patch of /adm_userMastwr*******");
   const userCompanyCode = req.query.userCompanyCode;
   const userCode = req.query.userCode;
+  const useBatch = req.query.useBatch;
+
   console.log(userCode);
-  let values = req.body.input;
+  let values = req.body.obj.input;
+  let itemList = req.body.obj.itemList;
+  console.log(itemList);
   delete values._id;
   values.partyName = "";
   values.billingAdress = "";
@@ -280,12 +302,131 @@ router.patch("/", verifyToken, (req, res) => {
       } else {
         res.send({
           values: {
-            ...req.body.input,
+            ...req.body.obj.input,
           },
         });
       }
     }
   );
+  const newItems = itemList
+    .filter((item) => Number(item.vouSrNo) !== 0)
+    .map((item) => {
+      return {
+        ...item,
+        prodName: "",
+        vouNo: values.vouNo,
+        userCompanyCode: userCompanyCode,
+        docCode: values.docCode,
+      };
+    });
+  database.collection("inv_voucherItems").deleteMany(
+    {
+      vouNo: values.vouNo,
+
+      userCompanyCode: userCompanyCode,
+    },
+
+    (err, data) => {
+      if (err) {
+        res.send({ err: err });
+        console.log(err, "error");
+      } else {
+      }
+    }
+  );
+
+  newItems.map((item) => {
+    delete item._id;
+    database.collection("inv_voucherItems").insertOne(
+      {
+        vouNo: values.vouNo,
+        vouSrNo: item.vouSrNo,
+        userCompanyCode: userCompanyCode,
+      },
+      {
+        $set: {
+          ...item,
+          updateBy: userCode,
+          updateOn: new Date(),
+        },
+      },
+      { upsert: true },
+      (err, data) => {
+        if (err) {
+          res.send({ err: err });
+          console.log(err, "error");
+        } else {
+        }
+      }
+    );
+  });
+  if (values.docCode == "DC" || values.docCode == "GR") {
+    const stockItems = newItems.map((item) => {
+      if (item.docCode == "DC") {
+        if (useBatch == "Yes") {
+          console.log(item.batchList);
+          return item.batchList.map((b) => {
+            return {
+              userCompanyCode: userCompanyCode,
+              prodCode: item.prodCode,
+              batchNo: b.batchNo,
+              inwardQty: "",
+              outwardQty: b.sell,
+              rate: item.rate,
+              refType: values.docCode,
+              refNo: values.vouNo,
+            };
+          });
+        } else {
+          return {
+            userCompanyCode: userCompanyCode,
+            prodCode: item.prodCode,
+            batchNo: item.batchNo,
+            inwardQty: "",
+            outwardQty: item.qty,
+            rate: item.rate,
+            refType: values.docCode,
+            refNo: values.vouNo,
+          };
+        }
+      } else if (item.docCode == "GR") {
+        return {
+          userCompanyCode: userCompanyCode,
+          prodCode: item.prodCode,
+          batchNo: item.batchNo,
+          inwardQty: item.qty,
+          outwardQty: "",
+          rate: item.rate,
+          refType: values.docCode,
+          refNo: values.vouNo,
+        };
+      }
+    });
+    console.log("hi**", stockItems);
+    database
+      .collection("inv_stockLedger")
+      .deleteMany(
+        { userCompanyCode: userCompanyCode, refNo: values.vouNo },
+        (err, data) => {
+          if (err) {
+            res.send({ err: err });
+            console.log("error!", err);
+          } else {
+            console.log("line401", data);
+            database
+              .collection("inv_stockLedger")
+              .insertMany(stockItems.flat(), (err, data) => {
+                if (err) {
+                  res.send({ err: err });
+                  console.log("error!", err);
+                } else {
+                  console.log(data);
+                }
+              });
+          }
+        }
+      );
+  }
 });
 
 router.delete("/", verifyToken, (req, res) => {
@@ -303,9 +444,18 @@ router.delete("/", verifyToken, (req, res) => {
           res.send({ err: err });
           console.log(err);
         } else {
-          res.send({});
-
-          console.log(values.vouNo + "deleted", data);
+          database
+            .collection("inv_stockLedger")
+            .deleteMany(
+              { userCompanyCode: userCompanyCode, refNo: values.vouNo },
+              (err, data) => {
+                if (err) {
+                  res.send({ err: err });
+                  console.log("error!", err);
+                } else {
+                }
+              }
+            );
         }
       }
     );

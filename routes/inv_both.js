@@ -148,7 +148,7 @@ router.get("/", verifyToken, (req, res) => {
     });
 });
 router.put("/", verifyToken, (req, res) => {
-  console.log("at put of /inv_ledger*******");
+  console.log("at put of /inv_both*******");
   const userCompanyCode = req.query.userCompanyCode;
   const userCode = req.query.userCode;
   const values = req.body.obj.input;
@@ -411,11 +411,11 @@ router.put("/", verifyToken, (req, res) => {
     });
 });
 router.patch("/", verifyToken, (req, res) => {
-  console.log("at patch of /adm_userMastwr*******");
+  console.log("at patch of /inv_both*******");
   const userCompanyCode = req.query.userCompanyCode;
   const userCode = req.query.userCode;
   console.log(userCode);
-  let values = req.body.input;
+  let values = req.body.obj.input;
   delete values._id;
   values.partyName = "";
   values.billingAdress = "";
