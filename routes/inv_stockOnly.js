@@ -198,9 +198,9 @@ router.put("/", verifyToken, (req, res) => {
                       res.send({ err: err });
                       console.log(err);
                     } else {
-                      if (values.docCode == "DC" || values.docCode == "GR") {
+                      if (values.docCode == "DC" || values.docCode == "GR"|| values.docCode=="SI") {
                         const stockItems = newItems.map((item) => {
-                          if (item.docCode == "DC") {
+                          if (item.docCode == "DC" || values.docCode=="SI") {
                             if (useBatch == "Yes") {
                               console.log(item.batchList);
                               return item.batchList.map((b) => {
@@ -360,9 +360,9 @@ router.patch("/", verifyToken, (req, res) => {
       }
     );
   });
-  if (values.docCode == "DC" || values.docCode == "GR") {
+  if (values.docCode == "DC" || values.docCode == "GR"|| values.docCode=="SI") {
     const stockItems = newItems.map((item) => {
-      if (item.docCode == "DC") {
+      if (item.docCode == "DC" || values.docCode=="SI") {
         if (useBatch == "Yes") {
           console.log(item.batchList);
           return item.batchList.map((b) => {

@@ -40,12 +40,14 @@ router.get("/", verifyToken, (req, res) => {
   console.log("at /batch*******", userCode, userCompanyCode, req.query);
   database
     .collection("inv_stockLedger")
-    .find({ userCompanyCode: userCompanyCode, prodCode: prodCode })
+    .find({ userCompanyCode: userCompanyCode })
     .toArray((err, arr) => {
       if (err) {
         res.send({ err: err });
         console.log(err);
       } else {
+        let raw = arr;
+        arr = arr.filter((item) => item.prodCode == prodCode);
         arr = arr.filter(
           (item) => item.refNo !== vouNo || Number(item.qty) == 0
         );
@@ -60,17 +62,18 @@ router.get("/", verifyToken, (req, res) => {
           for (const [key, value] of Object.entries(batches)) {
             final.push({ batchNo: key, qty: calc(value) });
           }
-          final = final.filter((item) => Number(item.qty) !== 0);
-
           console.log(final, "yes");
+          final = final.filter((item) => Number(item.qty) !== 0);
         } else {
           final = calc(arr);
           console.log(final, "no");
         }
-        res.send({ stock: final });
+        res.send({ stock: final, raw: raw });
       }
     });
 });
+
+
 function verifyToken(req, res, next) {
   console.log(req.params);
   const bearerHeader = req.headers["authorization"];
