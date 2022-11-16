@@ -22,12 +22,9 @@ function calc(arr) {
   let inward = 0;
   let outward = 0;
   arr.map((item) => {
-    if (item.refType == "DC") {
-      outward = outward + Number(item.outwardQty);
-    }
-    if (item.refType == "GR") {
-      inward = inward + Number(item.inwardQty);
-    }
+    outward = outward + Number(item.outwardQty);
+
+    inward = inward + Number(item.inwardQty);
   });
   return inward - outward;
 }
@@ -72,7 +69,6 @@ router.get("/", verifyToken, (req, res) => {
       }
     });
 });
-
 
 function verifyToken(req, res, next) {
   console.log(req.params);
