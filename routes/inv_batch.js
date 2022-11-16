@@ -65,7 +65,25 @@ router.get("/", verifyToken, (req, res) => {
           final = calc(arr);
           console.log(final, "no");
         }
-        res.send({ stock: final, raw: raw });
+        let prod = [];
+        console.log(useBatch, useBatch == "idk");
+
+        database
+          .collection("mst_prodMaster")
+          .find({})
+          .toArray((err, mst_prodMaster) => {
+            if (err) {
+              res.send({ err: err });
+              console.log(err);
+            } else {
+              let prod = [];
+              if (useBatch == "idk")
+                mst_prodMaster.map((item) => {
+                  prod.push(item);
+                });
+              res.send({ stock: final, raw: raw, prod: prod });
+            }
+          });
       }
     });
 });
