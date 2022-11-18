@@ -64,9 +64,10 @@ router.get("/", verifyToken, (req, res) => {
         } else {
           final = calc(arr);
           console.log(final, "no");
+          raw = raw.filter(
+            (item) => item.refType == "OP" || item.refType == "AJ"
+          );
         }
-        let prod = [];
-        console.log(useBatch, useBatch == "idk");
 
         database
           .collection("mst_prodMaster")
@@ -86,6 +87,105 @@ router.get("/", verifyToken, (req, res) => {
           });
       }
     });
+});
+router.put("/", verifyToken, (req, res) => {
+  console.log("at put of /inv_both*******");
+  const userCompanyCode = req.query.userCompanyCode;
+  const userCode = req.query.userCode;
+  const values = req.body.obj.input;
+  const input = req.body.obj.input;
+  delete values.prodName;
+  database
+    .collection("inv_stockLedger")
+    .find({ userCompanyCode: userCompanyCode, refType: values.refType })
+    .toArray((err, inv_voucher) => {
+      if (err) {
+        res.send({ err: err });
+      } else {
+        let usrcdarr = [];
+        inv_voucher.map((item) => {
+          if (item.refNo.slice(0, item.refNo.length - 4) == values.refNo) {
+            usrcdarr.push(parseInt(item.refNo.slice(10, 14)));
+          }
+        });
+        function getMax(usrcdarr) {
+          let x = 0;
+          usrcdarr.map((item) => {
+            if (item > x) {
+              x = item;
+            }
+          });
+          console.log(x);
+          return x;
+        }
+        const zeroPad = (num, places) => String(num).padStart(places, "0");
+
+        // let max = parseInt(getMax(usrcdarr));
+        let max;
+        parseInt(getMax(usrcdarr)) === 0
+          ? (max = "0001")
+          : (max = zeroPad(getMax(usrcdarr) + 1, 4));
+        console.log(usrcdarr, String(getMax(usrcdarr) + 1).length);
+        database.collection("inv_stockLedger").insertOne(
+          {
+            ...values,
+            refNo: values.refNo + max,
+            userCompanyCode: userCompanyCode,
+            entryBy: userCode,
+            entryOn: new Date(),
+          },
+          (err, data) => {
+            if (err) {
+              res.send({ err: err });
+              console.log(err);
+            } else {
+              res.send({
+                values: {
+                  ...input,
+                  refNo: values.refNo + max,
+                  userCompanyCode: userCompanyCode,
+                  entryBy: userCode,
+                  entryOn: new Date(),
+                },
+              });
+            }
+          }
+        );
+      }
+    });
+});
+router.patch("/", verifyToken, (req, res) => {
+  console.log("at put of /inv_both*******");
+  const userCompanyCode = req.query.userCompanyCode;
+  const userCode = req.query.userCode;
+  const values = req.body.obj.input;
+  const input = req.body.obj.input;
+  console.log(values);
+  delete values.prodName;
+  delete values._id;
+  delete values.getDate;
+  database.collection("inv_stockLedger").updateOne(
+    { refNo: values.refNo, userCompanyCode: userCompanyCode },
+    {
+      $set: {
+        ...values,
+        userCompanyCode: userCompanyCode,
+        refNo: values.refNo,
+        updateBy: userCode,
+        entryOn: new Date(),
+      },
+    },
+    (err, data) => {
+      if (err) {
+        res.send({ err: err });
+        console.log(err);
+      } else {
+        res.send({
+          values: { ...input, entryOn: new Date() },
+        });
+      }
+    }
+  );
 });
 
 function verifyToken(req, res, next) {

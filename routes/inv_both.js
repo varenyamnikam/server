@@ -218,7 +218,6 @@ router.put("/", verifyToken, (req, res) => {
                     docCode: values.docCode,
                   };
                 });
-              inv_stockLedger;
               if (newItems.length !== 0) {
                 database
                   .collection("inv_voucherItems")
