@@ -20,14 +20,14 @@ MongoClient.connect(cloudDb, { useNewUrlParser: true }, (error, result) => {
 });
 const ledgerArr = [
   { code: "partyCode", feild: "netAmount", type: "debit" },
-  { code: "G1002", feild: "qrTotal", type: "credit" },
-  { code: "G1004", feild: "discountTotal", type: "debit" },
-  { code: "G1005", feild: "cgstTotal", type: "credit" },
-  { code: "G1006", feild: "sgstTotal", type: "credit" },
-  { code: "G1007", feild: "igstTotal", type: "credit" },
-  { code: "G1010", feild: "cessTotal", type: "credit" },
-  { code: "G1011", feild: "billDis", type: "debit" },
-  { code: "G1009", feild: "roundOff", type: "both" },
+  { code: "G1001", feild: "qrTotal", type: "credit" },
+  { code: "G1002", feild: "discountTotal", type: "debit" },
+  { code: "G1003", feild: "cgstTotal", type: "credit" },
+  { code: "G1004", feild: "sgstTotal", type: "credit" },
+  { code: "G1005", feild: "igstTotal", type: "credit" },
+  { code: "G1006", feild: "cessTotal", type: "credit" },
+  { code: "G1007", feild: "billDis", type: "debit" },
+  { code: "G1008", feild: "roundOff", type: "both" },
 ];
 const fullForms = [
   { short: "QT", full: "Quotation" },
@@ -285,14 +285,20 @@ router.put("/", verifyToken, (req, res) => {
                             if (item.type == "credit") {
                               return {
                                 ...initialLedger,
-                                acCode: item.code,
+                                acCode:
+                                  item.code == "partyCode"
+                                    ? newVoucher.partyCode
+                                    : item.code,
                                 credit: newVoucher[item.feild],
                                 narration: getFullForm(values),
                               };
                             } else if (item.type == "debit") {
                               return {
                                 ...initialLedger,
-                                acCode: item.code,
+                                acCode:
+                                  item.code == "partyCode"
+                                    ? newVoucher.partyCode
+                                    : item.code,
                                 debit: newVoucher[item.feild],
                                 narration: getFullForm(values),
                               };
@@ -300,14 +306,20 @@ router.put("/", verifyToken, (req, res) => {
                               if (newVoucher[item.feild] >= 0)
                                 return {
                                   ...initialLedger,
-                                  acCode: item.code,
+                                  acCode:
+                                    item.code == "partyCode"
+                                      ? newVoucher.partyCode
+                                      : item.code,
                                   credit: newVoucher[item.feild],
                                   narration: getFullForm(values),
                                 };
                               else
                                 return {
                                   ...initialLedger,
-                                  acCode: item.code,
+                                  acCode:
+                                    item.code == "partyCode"
+                                      ? newVoucher.partyCode
+                                      : item.code,
                                   debit: newVoucher[item.feild],
                                   narration: getFullForm(values),
                                 };
@@ -320,14 +332,20 @@ router.put("/", verifyToken, (req, res) => {
                             if (item.type == "credit") {
                               return {
                                 ...initialLedger,
-                                acCode: item.code,
+                                acCode:
+                                  item.code == "partyCode"
+                                    ? newVoucher.partyCode
+                                    : item.code,
                                 debit: newVoucher[item.feild],
                                 narration: getFullForm(values),
                               };
                             } else if (item.type == "debit") {
                               return {
                                 ...initialLedger,
-                                acCode: item.code,
+                                acCode:
+                                  item.code == "partyCode"
+                                    ? newVoucher.partyCode
+                                    : item.code,
                                 credit: newVoucher[item.feild],
                                 narration: getFullForm(values),
                               };
@@ -335,14 +353,20 @@ router.put("/", verifyToken, (req, res) => {
                               if (newVoucher[item.feild] >= 0)
                                 return {
                                   ...initialLedger,
-                                  acCode: item.code,
+                                  acCode:
+                                    item.code == "partyCode"
+                                      ? newVoucher.partyCode
+                                      : item.code,
                                   debit: newVoucher[item.feild],
                                   narration: getFullForm(values),
                                 };
                               else
                                 return {
                                   ...initialLedger,
-                                  acCode: item.code,
+                                  acCode:
+                                    item.code == "partyCode"
+                                      ? newVoucher.partyCode
+                                      : item.code,
                                   credit: newVoucher[item.feild],
                                   narration: getFullForm(values),
                                 };

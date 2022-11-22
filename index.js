@@ -63,6 +63,7 @@ const inv_ledgerOnly = require("./routes/inv_ledgerOnly");
 const inv_both = require("./routes/inv_both");
 const inv_batch = require("./routes/inv_batch");
 const soft = require("./routes/soft");
+const accounting = require("./routes/ac_accounting");
 
 app.use("/api/register", register);
 app.use("/api/login", login);
@@ -86,6 +87,7 @@ app.use("/api/inv_ledger", inv_ledgerOnly);
 app.use("/api/inv_both", inv_both);
 app.use("/api/soft", soft);
 app.use("/api/batch", inv_batch);
+app.use("/api/accounting", accounting);
 
 // app.post("/api/adm_userrole", verifyToken, (req, res) => {
 //   database
