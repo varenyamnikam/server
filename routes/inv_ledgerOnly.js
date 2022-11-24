@@ -449,7 +449,32 @@ router.delete("/", verifyToken, (req, res) => {
         if (err) {
           res.send({ err: err });
         } else {
-          res.send({});
+          database
+            .collection("inv_voucherItems")
+            .deleteMany(
+              { userCompanyCode: userCompanyCode, vouNo: values.vouNo },
+              (err, data) => {
+                if (err) {
+                  res.send({ err: err });
+                } else {
+                  database.collection("inv_acLedger").deleteMany(
+                    {
+                      userCompanyCode: userCompanyCode,
+                      vouNo: values.vouNo,
+                    },
+                    (err, data) => {
+                      if (err) {
+                        res.send({ err: err });
+                      } else {
+                        res.send({});
+
+                        console.log(values.vouNo + "deleted", data);
+                      }
+                    }
+                  );
+                }
+              }
+            );
 
           console.log(values.vouNo + "deleted", data);
         }

@@ -198,9 +198,13 @@ router.put("/", verifyToken, (req, res) => {
                       res.send({ err: err });
                       console.log(err);
                     } else {
-                      if (values.docCode == "DC" || values.docCode == "GR"|| values.docCode=="SI") {
+                      if (
+                        values.docCode == "DC" ||
+                        values.docCode == "GR" ||
+                        values.docCode == "SI"
+                      ) {
                         const stockItems = newItems.map((item) => {
-                          if (item.docCode == "DC" || values.docCode=="SI") {
+                          if (item.docCode == "DC" || values.docCode == "SI") {
                             if (useBatch == "Yes") {
                               console.log(item.batchList);
                               return item.batchList.map((b) => {
@@ -360,9 +364,13 @@ router.patch("/", verifyToken, (req, res) => {
       }
     );
   });
-  if (values.docCode == "DC" || values.docCode == "GR"|| values.docCode=="SI") {
+  if (
+    values.docCode == "DC" ||
+    values.docCode == "GR" ||
+    values.docCode == "SI"
+  ) {
     const stockItems = newItems.map((item) => {
-      if (item.docCode == "DC" || values.docCode=="SI") {
+      if (item.docCode == "DC" || values.docCode == "SI") {
         if (useBatch == "Yes") {
           console.log(item.batchList);
           return item.batchList.map((b) => {
@@ -433,7 +441,7 @@ router.delete("/", verifyToken, (req, res) => {
   console.log("at delete of /inv_voucher*******");
 
   const userCompanyCode = req.query.userCompanyCode;
-  const values = req.body.item;
+  const values = req.body;
   console.log(values.vouNo);
   database
     .collection("inv_voucher")
@@ -442,7 +450,6 @@ router.delete("/", verifyToken, (req, res) => {
       (err, data) => {
         if (err) {
           res.send({ err: err });
-          console.log(err);
         } else {
           database
             .collection("inv_stockLedger")
@@ -451,11 +458,23 @@ router.delete("/", verifyToken, (req, res) => {
               (err, data) => {
                 if (err) {
                   res.send({ err: err });
-                  console.log("error!", err);
                 } else {
+                  database
+                    .collection("inv_voucherItems")
+                    .deleteMany(
+                      { userCompanyCode: userCompanyCode, vouNo: values.vouNo },
+                      (err, data) => {
+                        if (err) {
+                          res.send({ err: err });
+                        } else {
+                        }
+                      }
+                    );
                 }
               }
             );
+
+          console.log(values.vouNo + "deleted", data);
         }
       }
     );

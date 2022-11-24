@@ -476,7 +476,7 @@ router.delete("/", verifyToken, (req, res) => {
   console.log("at delete of /inv_voucher*******");
 
   const userCompanyCode = req.query.userCompanyCode;
-  const values = req.body;
+  const values = req.body.values;
   console.log(values.vouNo);
   database
     .collection("inv_voucher")
@@ -486,7 +486,43 @@ router.delete("/", verifyToken, (req, res) => {
         if (err) {
           res.send({ err: err });
         } else {
-          res.send({});
+          database
+            .collection("inv_stockLedger")
+            .deleteMany(
+              { userCompanyCode: userCompanyCode, refNo: values.vouNo },
+              (err, data) => {
+                if (err) {
+                  res.send({ err: err });
+                } else {
+                  database
+                    .collection("inv_voucherItems")
+                    .deleteMany(
+                      { userCompanyCode: userCompanyCode, vouNo: values.vouNo },
+                      (err, data) => {
+                        if (err) {
+                          res.send({ err: err });
+                        } else {
+                          database.collection("inv_acLedger").deleteMany(
+                            {
+                              userCompanyCode: userCompanyCode,
+                              vouNo: values.vouNo,
+                            },
+                            (err, data) => {
+                              if (err) {
+                                res.send({ err: err });
+                              } else {
+                                res.send({});
+
+                                console.log(values.vouNo + "deleted", data);
+                              }
+                            }
+                          );
+                        }
+                      }
+                    );
+                }
+              }
+            );
 
           console.log(values.vouNo + "deleted", data);
         }

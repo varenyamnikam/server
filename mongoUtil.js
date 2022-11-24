@@ -1,9 +1,9 @@
 const MongoClient = require("mongodb").MongoClient;
 // const databaseName = "novelseedsdb";
 const databaseName = "jivaErp";
-// const cloudDb = "mongodb://localhost:27017/";
-const cloudDb =
-  "mongodb+srv://username1001:password1001@cluster0.oeiyl.mongodb.net/?retryWrites=true&w=majority";
+const cloudDb = "mongodb://localhost:27017/";
+// const cloudDb =
+//   "mongodb+srv://username1001:password1001@cluster0.oeiyl.mongodb.net/?retryWrites=true&w=majority";
 
 module.exports = {
   // connectToServer: function (callback) {
