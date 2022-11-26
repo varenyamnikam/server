@@ -217,6 +217,7 @@ router.put("/", verifyToken, (req, res) => {
                                   rate: item.rate,
                                   refType: values.docCode,
                                   refNo: values.vouNo + max,
+                                  expDate: item.expDate,
                                 };
                               });
                             } else {
@@ -229,6 +230,7 @@ router.put("/", verifyToken, (req, res) => {
                                 rate: item.rate,
                                 refType: values.docCode,
                                 refNo: values.vouNo + max,
+                                expDate: item.expDate,
                               };
                             }
                           } else if (item.docCode == "GR") {
@@ -241,6 +243,7 @@ router.put("/", verifyToken, (req, res) => {
                               rate: item.rate,
                               refType: values.docCode,
                               refNo: values.vouNo + max,
+                              expDate: item.expDate,
                             };
                           }
                         });

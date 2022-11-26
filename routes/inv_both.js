@@ -238,6 +238,7 @@ router.put("/", verifyToken, (req, res) => {
                               rate: item.rate,
                               refType: values.docCode,
                               refNo: values.vouNo + max,
+                              expDate: item.expDate,
                             };
                           } else if (item.docCode == "SR") {
                             return {
@@ -249,6 +250,8 @@ router.put("/", verifyToken, (req, res) => {
                               rate: item.rate,
                               refType: values.docCode,
                               refNo: values.vouNo + max,
+                              expDate: item.expDate,
+
                             };
                           }
                         });
