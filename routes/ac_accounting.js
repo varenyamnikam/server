@@ -50,6 +50,8 @@ function getFullForm(voucher) {
 router.get("/", verifyToken, (req, res) => {
   const userCompanyCode = req.query.userCompanyCode;
   const userCode = req.query.userCode;
+  const yearStart = req.query.yearStart;
+
   const date = req.query.date;
   const docCode = req.query.docCode;
 
@@ -70,11 +72,19 @@ router.get("/", verifyToken, (req, res) => {
             if (err) {
               res.send({ err: err });
             } else {
-              console.log(inv_voucher);
-              const voucher = inv_voucher.filter(
-                (item) =>
+              const voucher = inv_voucher.filter((item) => {
+                console.log(
+                  "hi********************8",
+                  new Date(item.vouDate),
+                  new Date(date)
+                );
+                return (
                   new Date(item.vouDate).getTime() >= new Date(date).getTime()
-              );
+                );
+              });
+              console.log(new Date(date).getTime());
+              console.log(inv_voucher.length, voucher.length);
+
               // console.log(
               //   voucher.length,
               //   new Date(
@@ -154,6 +164,7 @@ router.put("/", verifyToken, (req, res) => {
             } else {
               res.send({
                 itemList: itemList,
+                max: values.vouNo + max,
               });
             }
           });
