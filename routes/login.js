@@ -104,39 +104,63 @@ router.post("/", (req, res) => {
                                           res.send({ err: err });
                                         } else {
                                           database
-                                            .collection("adm_company")
+                                            .collection("adm_finYear")
                                             .findOne(
                                               {
-                                                companyCode: userCompanyCode,
+                                                userCompanyCode:
+                                                  userCompanyCode,
+                                                yearCode: user.defaultYearCode,
                                               },
-                                              function (err, company) {
+                                              function (err, finYear) {
                                                 if (err) {
                                                   res.send({ err: err });
                                                 } else {
-                                                  user.defaultBranchName =
-                                                    dBranch[0].branchName;
-                                                  console.log(
-                                                    adm_softwareSettings
-                                                  );
-                                                  console.log(company);
-                                                  res.send({
-                                                    auth: true,
-                                                    token: token,
-                                                    result: result,
-                                                    userName: userName,
-                                                    userCompanyCode:
-                                                      userCompanyCode,
-                                                    adm_userrights:
-                                                      adm_userrights,
-                                                    userCompanyName:
-                                                      cmpny[0].companyName,
-                                                    userCode: userCode,
-                                                    user: user,
-                                                    Status: user.Status,
-                                                    adm_softwareSettings:
-                                                      adm_softwareSettings,
-                                                    company: company,
-                                                  });
+                                                  database
+                                                    .collection("adm_company")
+                                                    .findOne(
+                                                      {
+                                                        companyCode:
+                                                          userCompanyCode,
+                                                      },
+                                                      function (err, company) {
+                                                        if (err) {
+                                                          res.send({
+                                                            err: err,
+                                                          });
+                                                        } else {
+                                                          user.defaultBranchName =
+                                                            dBranch[0].branchName;
+                                                          console.log(
+                                                            adm_softwareSettings
+                                                          );
+                                                          console.log(company);
+                                                          user.defaultYearStart =
+                                                            finYear.yearStartDate;
+                                                          user.defaultYearEnd =
+                                                            finYear.yearEndDate;
+
+                                                          res.send({
+                                                            auth: true,
+                                                            token: token,
+                                                            result: result,
+                                                            userName: userName,
+                                                            userCompanyCode:
+                                                              userCompanyCode,
+                                                            adm_userrights:
+                                                              adm_userrights,
+                                                            userCompanyName:
+                                                              cmpny[0]
+                                                                .companyName,
+                                                            userCode: userCode,
+                                                            user: user,
+                                                            Status: user.Status,
+                                                            adm_softwareSettings:
+                                                              adm_softwareSettings,
+                                                            company: company,
+                                                          });
+                                                        }
+                                                      }
+                                                    );
                                                 }
                                               }
                                             );

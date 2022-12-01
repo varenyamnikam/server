@@ -50,12 +50,10 @@ function getFullForm(voucher) {
 router.get("/", verifyToken, (req, res) => {
   const userCompanyCode = req.query.userCompanyCode;
   const userCode = req.query.userCode;
-  const yearStart = req.query.yearStart;
-
   const date = req.query.date;
   const docCode = req.query.docCode;
-
-  console.log("post request recieved at get ledger", date);
+  const yearCode = req.query.yearCode;
+  console.log("post request recieved at get ledger", date, yearCode);
   database
     .collection("mst_accounts")
     .find({ userCompanyCode: userCompanyCode })
@@ -65,9 +63,7 @@ router.get("/", verifyToken, (req, res) => {
       } else {
         database
           .collection("inv_acLedger")
-          .find({
-            docCode: docCode,
-          })
+          .find({ userCompanyCode: userCompanyCode, docCode: docCode })
           .toArray((err, inv_voucher) => {
             if (err) {
               res.send({ err: err });
@@ -76,13 +72,20 @@ router.get("/", verifyToken, (req, res) => {
                 console.log(
                   "hi********************8",
                   new Date(item.vouDate),
+                  new Date(date),
+                  new Date(item.vouDate).setHours(0, 0, 0, 0) >=
+                    new Date(date).setHours(0, 0, 0, 0),
+
+                  item.vouNo.slice(6, 10) == yearCode,
                   new Date(date)
                 );
                 return (
-                  new Date(item.vouDate).getTime() >= new Date(date).getTime()
+                  new Date(item.vouDate).setHours(0, 0, 0, 0) >=
+                    new Date(date).setHours(0, 0, 0, 0) &&
+                  item.vouNo.slice(6, 10) == yearCode
                 );
               });
-              console.log(new Date(date).getTime());
+              console.log(new Date(date).setHours(0, 0, 0, 0));
               console.log(inv_voucher.length, voucher.length);
 
               // console.log(
@@ -91,7 +94,7 @@ router.get("/", verifyToken, (req, res) => {
               //     inv_voucher[
               //       inv_voucher.length - 1
               //     ].vouDate
-              //   ).getTime() >= new Date(date).getTime(),
+              //   ).setHours(0,0,0,0) >= new Date(date).setHours(0,0,0,0),
               //   voucher[voucher.length - 1].vouDate
               // );
 
