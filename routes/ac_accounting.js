@@ -53,7 +53,14 @@ router.get("/", verifyToken, (req, res) => {
   const date = req.query.date;
   const docCode = req.query.docCode;
   const yearCode = req.query.yearCode;
-  console.log("post request recieved at get ledger", date, yearCode);
+  const branchCode = req.query.branchCode;
+
+  console.log(
+    "post request recieved at get ledger",
+    date,
+    yearCode,
+    branchCode
+  );
   database
     .collection("mst_accounts")
     .find({ userCompanyCode: userCompanyCode })
@@ -77,6 +84,8 @@ router.get("/", verifyToken, (req, res) => {
                     new Date(date).setHours(0, 0, 0, 0),
 
                   item.vouNo.slice(6, 10) == yearCode,
+                  item.vouNo.slice(0, 4) == branchCode,
+
                   new Date(date)
                 );
                 return (
