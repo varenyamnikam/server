@@ -29,9 +29,11 @@ MongoClient.connect(cloudDb, { useNewUrlParser: true }, (error, result) => {
 });
 router.get("/", verifyToken, (req, res) => {
   console.log("at /mst_prodMaster*******");
+  const userCompanyCode = req.query.userCompanyCode;
+
   database
     .collection("mst_prodMaster")
-    .find({})
+    .find({ userCompanyCode: userCompanyCode })
     .toArray((err, mst_prodMaster) => {
       if (err) {
         res.send({ err: err });
@@ -49,7 +51,7 @@ router.post("/", verifyToken, (req, res) => {
   const values = req.body.input;
   database
     .collection("mst_prodMaster")
-    .find({})
+    .find({ userCompanyCode: userCompanyCode })
     .toArray((err, mst_prodMaster) => {
       if (err) {
         res.send({ err: err });

@@ -64,6 +64,7 @@ const inv_both = require("./routes/inv_both");
 const inv_batch = require("./routes/inv_batch");
 const soft = require("./routes/soft");
 const accounting = require("./routes/ac_accounting");
+const stockReport = require("./routes/stockReport");
 
 app.use("/api/register", register);
 app.use("/api/login", login);
@@ -88,6 +89,7 @@ app.use("/api/inv_both", inv_both);
 app.use("/api/soft", soft);
 app.use("/api/batch", inv_batch);
 app.use("/api/accounting", accounting);
+app.use("/api/stockReport", stockReport);
 
 // app.post("/api/adm_userrole", verifyToken, (req, res) => {
 //   database

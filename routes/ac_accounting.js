@@ -91,7 +91,8 @@ router.get("/", verifyToken, (req, res) => {
                 return (
                   new Date(item.vouDate).setHours(0, 0, 0, 0) >=
                     new Date(date).setHours(0, 0, 0, 0) &&
-                  item.vouNo.slice(6, 10) == yearCode
+                  item.vouNo.slice(6, 10) == yearCode &&
+                  item.vouNo.slice(0, 4) == branchCode
                 );
               });
               console.log(new Date(date).setHours(0, 0, 0, 0));

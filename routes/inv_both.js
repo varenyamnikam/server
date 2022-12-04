@@ -113,6 +113,7 @@ router.get("/", verifyToken, (req, res) => {
                                       //   ).getTime() >= new Date(date).getTime(),
                                       //   voucher[voucher.length - 1].vouDate
                                       // );
+                                      console.log("voucher  ===>  ", voucher);
                                       database
                                         .collection("inv_voucherItems")
                                         .find({
@@ -216,6 +217,7 @@ router.put("/", verifyToken, (req, res) => {
                     vouNo: values.vouNo + max,
                     userCompanyCode: userCompanyCode,
                     docCode: values.docCode,
+                    vouDate: values.vouDate,
                   };
                 });
               if (newItems.length !== 0) {
@@ -239,6 +241,7 @@ router.put("/", verifyToken, (req, res) => {
                               refType: values.docCode,
                               refNo: values.vouNo + max,
                               expDate: item.expDate,
+                              vouDate: values.vouDate,
                             };
                           } else if (item.docCode == "SR") {
                             return {
@@ -251,7 +254,7 @@ router.put("/", verifyToken, (req, res) => {
                               refType: values.docCode,
                               refNo: values.vouNo + max,
                               expDate: item.expDate,
-
+                              vouDate: values.vouDate,
                             };
                           }
                         });

@@ -23,7 +23,7 @@ router.get("/", verifyToken, (req, res) => {
   const userCode = req.query.userCode;
   const date = req.query.date;
   const docCode = req.query.docCode;
-  console.log("get request recieved at get dc(stockonly)", date);
+  console.log("get request recieved at get dc(stockonly)", date, docCode);
   database
     .collection("mst_accounts")
     .find({ userCompanyCode: userCompanyCode })
@@ -71,8 +71,13 @@ router.get("/", verifyToken, (req, res) => {
                                     } else {
                                       const voucher = inv_voucher.filter(
                                         (item) =>
-                                          new Date(item.vouDate).getTime() >=
-                                          new Date(date).getTime()
+                                          new Date(item.vouDate).setHours(
+                                            0,
+                                            0,
+                                            0,
+                                            0
+                                          ) >=
+                                          new Date(date).setHours(0, 0, 0, 0)
                                       );
                                       // console.log(
                                       //   voucher.length,
@@ -80,7 +85,7 @@ router.get("/", verifyToken, (req, res) => {
                                       //     inv_voucher[
                                       //       inv_voucher.length - 1
                                       //     ].vouDate
-                                      //   ).getTime() >= new Date(date).getTime(),
+                                      //   ).setHours(0,0,0,0) >= new Date(date).setHours(0,0,0,0),
                                       //   voucher[voucher.length - 1].vouDate
                                       // );
                                       database
@@ -92,6 +97,11 @@ router.get("/", verifyToken, (req, res) => {
                                           if (err) {
                                             res.send({ err: err });
                                           } else {
+                                            console.log(
+                                              "voucher  ===>  ",
+                                              voucher
+                                            );
+
                                             res.json({
                                               mst_accounts: mst_accounts,
                                               mst_prodMaster: mst_prodMaster,
@@ -188,6 +198,7 @@ router.put("/", verifyToken, (req, res) => {
                     vouNo: values.vouNo + max,
                     userCompanyCode: userCompanyCode,
                     docCode: values.docCode,
+                    vouDate: values.vouDate,
                   };
                 });
               if (newItems.length !== 0) {
@@ -218,6 +229,7 @@ router.put("/", verifyToken, (req, res) => {
                                   refType: values.docCode,
                                   refNo: values.vouNo + max,
                                   expDate: item.expDate,
+                                  vouDate: values.vouDate,
                                 };
                               });
                             } else {
@@ -231,6 +243,7 @@ router.put("/", verifyToken, (req, res) => {
                                 refType: values.docCode,
                                 refNo: values.vouNo + max,
                                 expDate: item.expDate,
+                                vouDate: values.vouDate,
                               };
                             }
                           } else if (item.docCode == "GR") {
@@ -244,6 +257,7 @@ router.put("/", verifyToken, (req, res) => {
                               refType: values.docCode,
                               refNo: values.vouNo + max,
                               expDate: item.expDate,
+                              vouDate: values.vouDate,
                             };
                           }
                         });
