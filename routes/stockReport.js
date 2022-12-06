@@ -81,19 +81,6 @@ router.get("/", verifyToken, (req, res) => {
                   openingStock = 0;
                 }
                 let currentStock = stock.filter((item) => {
-                  console.log(
-                    "hi********************8",
-                    new Date(item.vouDate),
-                    new Date(item.vouDate).setHours(0, 0, 0, 0) >=
-                      new Date(startDate).setHours(0, 0, 0, 0),
-                    new Date(item.vouDate).setHours(0, 0, 0, 0) <=
-                      new Date(endDate).setHours(0, 0, 0, 0),
-                    item.refNo.slice(6, 10) == yearCode,
-                    item.refNo.slice(0, 4) == branchCode,
-                    item.refNo.slice(6, 10) == yearCode,
-                    item.refNo.slice(0, 4) == branchCode,
-                    item.prodCode == prod.prodCode
-                  );
                   return (
                     new Date(item.vouDate).setHours(0, 0, 0, 0) >=
                       new Date(startDate).setHours(0, 0, 0, 0) &&
@@ -121,17 +108,19 @@ router.get("/", verifyToken, (req, res) => {
                   UOM: prod.UOM,
                 };
               });
-              // console.log(
-              //   currentStock.length,
-              //   new Date(
-              //     stock[
-              //       stock.length - 1
-              //     ].vouDate
-              //   currentStock[currentStock.length - 1].vouDate
-              // );
-
+              let monthlyStock = stock.filter((item) => {
+                return (
+                  new Date(item.vouDate).setHours(0, 0, 0, 0) >=
+                    new Date(startDate).setHours(0, 0, 0, 0) &&
+                  new Date(item.vouDate).setHours(0, 0, 0, 0) <=
+                    new Date(endDate).setHours(0, 0, 0, 0) &&
+                  item.refNo.slice(6, 10) == yearCode &&
+                  item.refNo.slice(0, 4) == branchCode
+                );
+              });
               res.json({
                 records: records,
+                stock: monthlyStock,
               });
             }
           });

@@ -18,12 +18,24 @@ MongoClient.connect(cloudDb, { useNewUrlParser: true }, (error, result) => {
 
   // return callback(error);
 });
+function isJson(str) {
+  try {
+    var json = JSON.parse(str);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 router.get("/", verifyToken, (req, res) => {
   const userCompanyCode = req.query.userCompanyCode;
   const userCode = req.query.userCode;
-  const date = req.query.date;
-  const docCode = req.query.docCode;
-  console.log("get request recieved at get dc(stockonly)", date, docCode);
+  const startDate = req.query.startDate;
+  const endDate = req.query.endDate;
+  let docCode = req.query.docCode;
+
+  if (isJson(docCode)) docCode = JSON.parse(docCode);
+  console.log("get request recieved at get dc(stockonly)", startDate, docCode);
   database
     .collection("mst_accounts")
     .find({ userCompanyCode: userCompanyCode })
@@ -33,7 +45,7 @@ router.get("/", verifyToken, (req, res) => {
       } else {
         database
           .collection("mst_prodMaster")
-          .find({})
+          .find({ userCompanyCode: userCompanyCode })
           .toArray((err, mst_prodMaster) => {
             if (err) {
               res.send({ err: err });
@@ -77,7 +89,24 @@ router.get("/", verifyToken, (req, res) => {
                                             0,
                                             0
                                           ) >=
-                                          new Date(date).setHours(0, 0, 0, 0)
+                                            new Date(startDate).setHours(
+                                              0,
+                                              0,
+                                              0,
+                                              0
+                                            ) &&
+                                          new Date(item.vouDate).setHours(
+                                            0,
+                                            0,
+                                            0,
+                                            0
+                                          ) <=
+                                            new Date(endDate).setHours(
+                                              0,
+                                              0,
+                                              0,
+                                              0
+                                            )
                                       );
                                       // console.log(
                                       //   voucher.length,
@@ -85,7 +114,7 @@ router.get("/", verifyToken, (req, res) => {
                                       //     inv_voucher[
                                       //       inv_voucher.length - 1
                                       //     ].vouDate
-                                      //   ).setHours(0,0,0,0) >= new Date(date).setHours(0,0,0,0),
+                                      //   ).setHours(0,0,0,0) >= new Date(startDate).setHours(0,0,0,0),
                                       //   voucher[voucher.length - 1].vouDate
                                       // );
                                       database
@@ -97,10 +126,25 @@ router.get("/", verifyToken, (req, res) => {
                                           if (err) {
                                             res.send({ err: err });
                                           } else {
-                                            console.log(
-                                              "voucher  ===>  ",
-                                              voucher
-                                            );
+                                            let voucherItems =
+                                              inv_voucherItems.filter(
+                                                (item) =>
+                                                  new Date(
+                                                    item.vouDate
+                                                  ).setHours(0, 0, 0, 0) >=
+                                                    new Date(
+                                                      startDate
+                                                    ).setHours(0, 0, 0, 0) &&
+                                                  new Date(
+                                                    item.vouDate
+                                                  ).setHours(0, 0, 0, 0) <=
+                                                    new Date(endDate).setHours(
+                                                      0,
+                                                      0,
+                                                      0,
+                                                      0
+                                                    )
+                                              );
 
                                             res.json({
                                               mst_accounts: mst_accounts,
@@ -108,8 +152,7 @@ router.get("/", verifyToken, (req, res) => {
                                               mst_acadress: mst_acadress,
                                               mst_paymentTerm: mst_paymentTerm,
                                               inv_voucher: voucher,
-                                              inv_voucherItems:
-                                                inv_voucherItems,
+                                              inv_voucherItems: voucherItems,
                                               mst_prodMaster: mst_prodMaster,
                                             });
                                           }
@@ -134,8 +177,7 @@ router.put("/", verifyToken, (req, res) => {
   const useBatch = req.query.useBatch;
 
   const values = req.body.obj.input;
-  const date = req.body.obj.date;
-  console.log(userCompanyCode, typeof values.vouDate, new Date(date));
+  console.log(userCompanyCode, typeof values.vouDate);
   const input = req.body.obj.input;
   const items = req.body.obj.itemList;
   values.partyName = "";
@@ -321,6 +363,122 @@ router.patch("/", verifyToken, (req, res) => {
         res.send({ err: err });
         console.log(err, "error");
       } else {
+        const newItems = itemList
+          .filter((item) => Number(item.vouSrNo) !== 0)
+          .map((item) => {
+            delete item._id;
+            return {
+              ...item,
+              prodName: "",
+              vouNo: values.vouNo,
+              userCompanyCode: userCompanyCode,
+              docCode: values.docCode,
+            };
+          });
+        database.collection("inv_voucherItems").deleteMany(
+          {
+            vouNo: values.vouNo,
+
+            userCompanyCode: userCompanyCode,
+          },
+
+          (err, data) => {
+            if (err) {
+              res.send({ err: err });
+              console.log(err, "error");
+            } else {
+              database
+                .collection("inv_voucherItems")
+                .insertMany(newItems, (err, data) => {
+                  if (err) {
+                    res.send({ err: err });
+                    console.log(err, "error");
+                  } else {
+                    if (
+                      values.docCode == "DC" ||
+                      values.docCode == "GR" ||
+                      values.docCode == "SI"
+                    ) {
+                      const stockItems = newItems.map((item) => {
+                        if (item.docCode == "DC" || values.docCode == "SI") {
+                          if (useBatch == "Yes") {
+                            console.log(item.batchList);
+                            return item.batchList.map((b) => {
+                              return {
+                                userCompanyCode: userCompanyCode,
+                                prodCode: item.prodCode,
+                                batchNo: b.batchNo,
+                                inwardQty: "",
+                                outwardQty: b.sell,
+                                rate: item.rate,
+                                refType: values.docCode,
+                                refNo: values.vouNo,
+                                expDate: item.expDate,
+                                vouDate: values.vouDate,
+                              };
+                            });
+                          } else {
+                            return {
+                              userCompanyCode: userCompanyCode,
+                              prodCode: item.prodCode,
+                              batchNo: item.batchNo,
+                              inwardQty: "",
+                              outwardQty: item.qty,
+                              rate: item.rate,
+                              refType: values.docCode,
+                              refNo: values.vouNo,
+                              expDate: item.expDate,
+                              vouDate: values.vouDate,
+                            };
+                          }
+                        } else if (item.docCode == "GR") {
+                          return {
+                            userCompanyCode: userCompanyCode,
+                            prodCode: item.prodCode,
+                            batchNo: item.batchNo,
+                            inwardQty: item.qty,
+                            outwardQty: "",
+                            rate: item.rate,
+                            refType: values.docCode,
+                            refNo: values.vouNo,
+                            expDate: item.expDate,
+                            vouDate: values.vouDate,
+                          };
+                        }
+                      });
+                      console.log("hi**", stockItems);
+                      database
+                        .collection("inv_stockLedger")
+                        .deleteMany(
+                          {
+                            userCompanyCode: userCompanyCode,
+                            refNo: values.vouNo,
+                          },
+                          (err, data) => {
+                            if (err) {
+                              res.send({ err: err });
+                              console.log("error!", err);
+                            } else {
+                              console.log("line401", data);
+                              database
+                                .collection("inv_stockLedger")
+                                .insertMany(stockItems.flat(), (err, data) => {
+                                  if (err) {
+                                    res.send({ err: err });
+                                    console.log("error!", err);
+                                  } else {
+                                    console.log(data);
+                                  }
+                                });
+                            }
+                          }
+                        );
+                    }
+                  }
+                });
+            }
+          }
+        );
         res.send({
           values: {
             ...req.body.obj.input,
@@ -329,129 +487,6 @@ router.patch("/", verifyToken, (req, res) => {
       }
     }
   );
-  const newItems = itemList
-    .filter((item) => Number(item.vouSrNo) !== 0)
-    .map((item) => {
-      return {
-        ...item,
-        prodName: "",
-        vouNo: values.vouNo,
-        userCompanyCode: userCompanyCode,
-        docCode: values.docCode,
-      };
-    });
-  database.collection("inv_voucherItems").deleteMany(
-    {
-      vouNo: values.vouNo,
-
-      userCompanyCode: userCompanyCode,
-    },
-
-    (err, data) => {
-      if (err) {
-        res.send({ err: err });
-        console.log(err, "error");
-      } else {
-      }
-    }
-  );
-
-  newItems.map((item) => {
-    delete item._id;
-    database.collection("inv_voucherItems").insertOne(
-      {
-        vouNo: values.vouNo,
-        vouSrNo: item.vouSrNo,
-        userCompanyCode: userCompanyCode,
-      },
-      {
-        $set: {
-          ...item,
-          updateBy: userCode,
-          updateOn: new Date(),
-        },
-      },
-      { upsert: true },
-      (err, data) => {
-        if (err) {
-          res.send({ err: err });
-          console.log(err, "error");
-        } else {
-        }
-      }
-    );
-  });
-  if (
-    values.docCode == "DC" ||
-    values.docCode == "GR" ||
-    values.docCode == "SI"
-  ) {
-    const stockItems = newItems.map((item) => {
-      if (item.docCode == "DC" || values.docCode == "SI") {
-        if (useBatch == "Yes") {
-          console.log(item.batchList);
-          return item.batchList.map((b) => {
-            return {
-              userCompanyCode: userCompanyCode,
-              prodCode: item.prodCode,
-              batchNo: b.batchNo,
-              inwardQty: "",
-              outwardQty: b.sell,
-              rate: item.rate,
-              refType: values.docCode,
-              refNo: values.vouNo,
-            };
-          });
-        } else {
-          return {
-            userCompanyCode: userCompanyCode,
-            prodCode: item.prodCode,
-            batchNo: item.batchNo,
-            inwardQty: "",
-            outwardQty: item.qty,
-            rate: item.rate,
-            refType: values.docCode,
-            refNo: values.vouNo,
-          };
-        }
-      } else if (item.docCode == "GR") {
-        return {
-          userCompanyCode: userCompanyCode,
-          prodCode: item.prodCode,
-          batchNo: item.batchNo,
-          inwardQty: item.qty,
-          outwardQty: "",
-          rate: item.rate,
-          refType: values.docCode,
-          refNo: values.vouNo,
-        };
-      }
-    });
-    console.log("hi**", stockItems);
-    database
-      .collection("inv_stockLedger")
-      .deleteMany(
-        { userCompanyCode: userCompanyCode, refNo: values.vouNo },
-        (err, data) => {
-          if (err) {
-            res.send({ err: err });
-            console.log("error!", err);
-          } else {
-            console.log("line401", data);
-            database
-              .collection("inv_stockLedger")
-              .insertMany(stockItems.flat(), (err, data) => {
-                if (err) {
-                  res.send({ err: err });
-                  console.log("error!", err);
-                } else {
-                  console.log(data);
-                }
-              });
-          }
-        }
-      );
-  }
 });
 
 router.delete("/", verifyToken, (req, res) => {

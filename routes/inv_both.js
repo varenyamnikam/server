@@ -47,13 +47,25 @@ function getFullForm(voucher) {
   const full = fullForms.find((item) => item.short == voucher.docCode);
   return full.full + "No" + `${voucher.vouNo}`;
 }
+function isJson(str) {
+  try {
+    var json = JSON.parse(str);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
 router.get("/", verifyToken, (req, res) => {
   const userCompanyCode = req.query.userCompanyCode;
   const userCode = req.query.userCode;
-  const date = req.query.date;
-  const docCode = req.query.docCode;
+  const startDate = req.query.startDate;
+  const endDate = req.query.endDate;
+  let docCode = req.query.docCode;
 
-  console.log("post request recieved at get both", date);
+  if (isJson(docCode)) docCode = JSON.parse(docCode);
+
+  console.log("at get of dc(both)", isJson(docCode), typeof docCode);
+  console.log("post request recieved at get both", startDate);
   database
     .collection("mst_accounts")
     .find({ userCompanyCode: userCompanyCode })
@@ -63,7 +75,7 @@ router.get("/", verifyToken, (req, res) => {
       } else {
         database
           .collection("mst_prodMaster")
-          .find({})
+          .find({ userCompanyCode: userCompanyCode })
           .toArray((err, mst_prodMaster) => {
             if (err) {
               res.send({ err: err });
@@ -101,8 +113,30 @@ router.get("/", verifyToken, (req, res) => {
                                     } else {
                                       const voucher = inv_voucher.filter(
                                         (item) =>
-                                          new Date(item.vouDate).getTime() >=
-                                          new Date(date).getTime()
+                                          new Date(item.vouDate).setHours(
+                                            0,
+                                            0,
+                                            0,
+                                            0
+                                          ) >=
+                                            new Date(startDate).setHours(
+                                              0,
+                                              0,
+                                              0,
+                                              0
+                                            ) &&
+                                          new Date(item.vouDate).setHours(
+                                            0,
+                                            0,
+                                            0,
+                                            0
+                                          ) <=
+                                            new Date(endDate).setHours(
+                                              0,
+                                              0,
+                                              0,
+                                              0
+                                            )
                                       );
                                       // console.log(
                                       //   voucher.length,
@@ -110,7 +144,7 @@ router.get("/", verifyToken, (req, res) => {
                                       //     inv_voucher[
                                       //       inv_voucher.length - 1
                                       //     ].vouDate
-                                      //   ).getTime() >= new Date(date).getTime(),
+                                      //   ).getTime() >= new Date(startDate).getTime(),
                                       //   voucher[voucher.length - 1].vouDate
                                       // );
                                       console.log("voucher  ===>  ", voucher);
@@ -118,19 +152,38 @@ router.get("/", verifyToken, (req, res) => {
                                         .collection("inv_voucherItems")
                                         .find({
                                           userCompanyCode: userCompanyCode,
+                                          docCode: docCode,
                                         })
                                         .toArray((err, inv_voucherItems) => {
                                           if (err) {
                                             res.send({ err: err });
                                           } else {
+                                            let voucherItems =
+                                              inv_voucherItems.filter(
+                                                (item) =>
+                                                  new Date(
+                                                    item.vouDate
+                                                  ).setHours(0, 0, 0, 0) >=
+                                                    new Date(
+                                                      startDate
+                                                    ).setHours(0, 0, 0, 0) &&
+                                                  new Date(
+                                                    item.vouDate
+                                                  ).setHours(0, 0, 0, 0) <=
+                                                    new Date(endDate).setHours(
+                                                      0,
+                                                      0,
+                                                      0,
+                                                      0
+                                                    )
+                                              );
                                             res.json({
                                               mst_accounts: mst_accounts,
                                               mst_prodMaster: mst_prodMaster,
                                               mst_acadress: mst_acadress,
                                               mst_paymentTerm: mst_paymentTerm,
                                               inv_voucher: voucher,
-                                              inv_voucherItems:
-                                                inv_voucherItems,
+                                              inv_voucherItems: voucherItems,
                                               mst_prodMaster: mst_prodMaster,
                                             });
                                           }
@@ -153,8 +206,7 @@ router.put("/", verifyToken, (req, res) => {
   const userCompanyCode = req.query.userCompanyCode;
   const userCode = req.query.userCode;
   const values = req.body.obj.input;
-  const date = req.body.obj.date;
-  console.log(userCompanyCode, typeof values.vouDate, new Date(date));
+  console.log(userCompanyCode, typeof values.vouDate);
   const input = req.body.obj.input;
   const items = req.body.obj.itemList;
   values.partyName = "";
@@ -260,11 +312,11 @@ router.put("/", verifyToken, (req, res) => {
                         });
                         const initialLedger = {
                           userCompanyCode: userCompanyCode,
-                          vouNo: values.vouNo,
+                          vouNo: values.vouNo + max,
                           branchCode: values.branchCode,
                           docCode: values.docCode,
                           finYear: values.finYear,
-                          vno: values.vno,
+                          vno: max,
                           manualNo: values.manualNo,
                           vouDate: values.vouDate,
                           srNo: "",
@@ -441,11 +493,14 @@ router.put("/", verifyToken, (req, res) => {
     });
 });
 router.patch("/", verifyToken, (req, res) => {
-  console.log("at patch of /inv_both*******");
   const userCompanyCode = req.query.userCompanyCode;
   const userCode = req.query.userCode;
+  const useBatch = req.query.useBatch;
+
   console.log(userCode);
   let values = req.body.obj.input;
+  let itemList = req.body.obj.itemList;
+  console.log(itemList);
   delete values._id;
   values.partyName = "";
   values.billingAdress = "";
@@ -468,22 +523,281 @@ router.patch("/", verifyToken, (req, res) => {
         res.send({ err: err });
         console.log(err, "error");
       } else {
-        res.send({
-          values: {
-            ...req.body.input,
+        const newItems = itemList
+          .filter((item) => Number(item.vouSrNo) !== 0)
+          .map((item) => {
+            delete item._id;
+            return {
+              ...item,
+              prodName: "",
+              vouNo: values.vouNo,
+              userCompanyCode: userCompanyCode,
+              docCode: values.docCode,
+            };
+          });
+        database.collection("inv_voucherItems").deleteMany(
+          {
+            vouNo: values.vouNo,
+
+            userCompanyCode: userCompanyCode,
           },
-        });
+
+          (err, data) => {
+            if (err) {
+              res.send({ err: err });
+              console.log(err, "error");
+            } else {
+              database
+                .collection("inv_voucherItems")
+                .insertMany(newItems, (err, data) => {
+                  if (err) {
+                    res.send({ err: err });
+                    console.log(err, "error");
+                  } else {
+                    if (values.docCode == "SR" || values.docCode == "PR") {
+                      const stockItems = newItems.map((item) => {
+                        if (item.docCode == "PR") {
+                          return {
+                            userCompanyCode: userCompanyCode,
+                            prodCode: item.prodCode,
+                            batchNo: item.batchNo,
+                            inwardQty: "",
+                            outwardQty: item.qty,
+                            rate: item.rate,
+                            refType: values.docCode,
+                            refNo: values.vouNo,
+                            expDate: item.expDate,
+                            vouDate: values.vouDate,
+                          };
+                        } else if (item.docCode == "SR") {
+                          return {
+                            userCompanyCode: userCompanyCode,
+                            prodCode: item.prodCode,
+                            batchNo: item.batchNo,
+                            inwardQty: item.qty,
+                            outwardQty: "",
+                            rate: item.rate,
+                            refType: values.docCode,
+                            refNo: values.vouNo,
+                            expDate: item.expDate,
+                            vouDate: values.vouDate,
+                          };
+                        }
+                      });
+                      const initialLedger = {
+                        userCompanyCode: userCompanyCode,
+                        vouNo: values.vouNo,
+                        branchCode: values.branchCode,
+                        docCode: values.docCode,
+                        finYear: values.finYear,
+                        manualNo: values.manualNo,
+                        vouDate: values.vouDate,
+                        srNo: "",
+                        acCode: "",
+                        debit: "",
+                        credit: "",
+                        narration: "",
+                        refType: values.refType,
+                        refNo: values.refNo,
+                        vouStatus: "Clear",
+                        checkNo: "",
+                        favouringName: "",
+                        entryBy: userCode,
+                        entryOn: new Date(),
+                      };
+                      let cgstTotal = 0;
+                      let sgstTotal = 0;
+                      let igstTotal = 0;
+                      let cessTotal = 0;
+                      let qrTotal = 0;
+                      let discountTotal = 0;
+                      newItems.map((newItem) => {
+                        cgstTotal += Number(newItem.cgst);
+                        sgstTotal += Number(newItem.sgst);
+                        igstTotal += Number(newItem.igst);
+                        cessTotal += Number(newItem.cess);
+                        qrTotal += Number(newItem.qr);
+                        discountTotal += Number(newItem.discount);
+                      });
+                      const newVoucher = {
+                        ...values,
+                        cgstTotal: cgstTotal,
+                        sgstTotal: sgstTotal,
+                        igstTotal: igstTotal,
+                        cessTotal: cessTotal,
+                        qrTotal: qrTotal,
+                        discountTotal: discountTotal,
+                        billDis: Number(values.billDis),
+                        roundOff: Number(values.roundOff),
+                      };
+                      let finalArr;
+                      if (
+                        values.docCode == "SI" ||
+                        values.docCode == "PR" ||
+                        values.docCode == "DN"
+                      ) {
+                        finalArr = ledgerArr
+                          .filter((item) => newVoucher[item.feild] !== 0)
+                          .map((item) => {
+                            if (item.type == "credit") {
+                              return {
+                                ...initialLedger,
+                                acCode:
+                                  item.code == "partyCode"
+                                    ? newVoucher.partyCode
+                                    : item.code,
+                                credit: newVoucher[item.feild],
+                                narration: getFullForm(values),
+                              };
+                            } else if (item.type == "debit") {
+                              return {
+                                ...initialLedger,
+                                acCode:
+                                  item.code == "partyCode"
+                                    ? newVoucher.partyCode
+                                    : item.code,
+                                debit: newVoucher[item.feild],
+                                narration: getFullForm(values),
+                              };
+                            } else {
+                              if (newVoucher[item.feild] >= 0)
+                                return {
+                                  ...initialLedger,
+                                  acCode:
+                                    item.code == "partyCode"
+                                      ? newVoucher.partyCode
+                                      : item.code,
+                                  credit: newVoucher[item.feild],
+                                  narration: getFullForm(values),
+                                };
+                              else
+                                return {
+                                  ...initialLedger,
+                                  acCode:
+                                    item.code == "partyCode"
+                                      ? newVoucher.partyCode
+                                      : item.code,
+                                  debit: newVoucher[item.feild],
+                                  narration: getFullForm(values),
+                                };
+                            }
+                          });
+                      } else {
+                        finalArr = ledgerArr
+                          .filter((item) => newVoucher[item.feild] !== 0)
+                          .map((item) => {
+                            if (item.type == "credit") {
+                              return {
+                                ...initialLedger,
+                                acCode:
+                                  item.code == "partyCode"
+                                    ? newVoucher.partyCode
+                                    : item.code,
+                                debit: newVoucher[item.feild],
+                                narration: getFullForm(values),
+                              };
+                            } else if (item.type == "debit") {
+                              return {
+                                ...initialLedger,
+                                acCode:
+                                  item.code == "partyCode"
+                                    ? newVoucher.partyCode
+                                    : item.code,
+                                credit: newVoucher[item.feild],
+                                narration: getFullForm(values),
+                              };
+                            } else {
+                              if (newVoucher[item.feild] >= 0)
+                                return {
+                                  ...initialLedger,
+                                  acCode:
+                                    item.code == "partyCode"
+                                      ? newVoucher.partyCode
+                                      : item.code,
+                                  debit: newVoucher[item.feild],
+                                  narration: getFullForm(values),
+                                };
+                              else
+                                return {
+                                  ...initialLedger,
+                                  acCode:
+                                    item.code == "partyCode"
+                                      ? newVoucher.partyCode
+                                      : item.code,
+                                  credit: newVoucher[item.feild],
+                                  narration: getFullForm(values),
+                                };
+                            }
+                          });
+                      }
+                      database.collection("inv_acLedger").deleteMany(
+                        {
+                          userCompanyCode: userCompanyCode,
+                          vouNo: values.vouNo,
+                        },
+                        (err, data) => {
+                          if (err) {
+                            res.send({ err: err });
+                          } else {
+                            database.collection("inv_stockLedger").deleteMany(
+                              {
+                                userCompanyCode: userCompanyCode,
+                                refNo: values.vouNo,
+                              },
+                              (err, data) => {
+                                if (err) {
+                                  res.send({ err: err });
+                                  console.log("error!", err);
+                                } else {
+                                  database
+                                    .collection("inv_acLedger")
+                                    .insertMany(finalArr, (err, data) => {
+                                      if (err) {
+                                        res.send({ err: err });
+                                      } else {
+                                        database
+                                          .collection("inv_stockLedger")
+                                          .insertMany(
+                                            stockItems,
+                                            (err, data) => {
+                                              if (err) {
+                                                res.send({ err: err });
+                                                console.log("error!", err);
+                                              } else {
+                                                res.send({
+                                                  values: {
+                                                    ...req.body.obj.input,
+                                                  },
+                                                  items: newItems,
+                                                });
+                                              }
+                                            }
+                                          );
+                                      }
+                                    });
+                                }
+                              }
+                            );
+                          }
+                        }
+                      );
+                    }
+                  }
+                });
+            }
+          }
+        );
       }
     }
   );
 });
 
 router.delete("/", verifyToken, (req, res) => {
-  console.log("at delete of /inv_voucher*******");
+  console.log("at delete of /inv_both*******");
 
   const userCompanyCode = req.query.userCompanyCode;
-  const values = req.body.values;
-  console.log(values.vouNo);
+  const values = req.body;
+  console.log(values);
   database
     .collection("inv_voucher")
     .deleteOne(
