@@ -552,234 +552,229 @@ router.patch("/", verifyToken, (req, res) => {
                     res.send({ err: err });
                     console.log(err, "error");
                   } else {
-                    if (values.docCode == "SR" || values.docCode == "PR") {
-                      const stockItems = newItems.map((item) => {
-                        if (item.docCode == "PR") {
-                          return {
-                            userCompanyCode: userCompanyCode,
-                            prodCode: item.prodCode,
-                            batchNo: item.batchNo,
-                            inwardQty: "",
-                            outwardQty: item.qty,
-                            rate: item.rate,
-                            refType: values.docCode,
-                            refNo: values.vouNo,
-                            expDate: item.expDate,
-                            vouDate: values.vouDate,
-                          };
-                        } else if (item.docCode == "SR") {
-                          return {
-                            userCompanyCode: userCompanyCode,
-                            prodCode: item.prodCode,
-                            batchNo: item.batchNo,
-                            inwardQty: item.qty,
-                            outwardQty: "",
-                            rate: item.rate,
-                            refType: values.docCode,
-                            refNo: values.vouNo,
-                            expDate: item.expDate,
-                            vouDate: values.vouDate,
-                          };
-                        }
-                      });
-                      const initialLedger = {
+                    const stockItems = newItems.map((item) => {
+                      if (item.docCode == "PR" || item.docCode == "SI") {
+                        return {
+                          userCompanyCode: userCompanyCode,
+                          prodCode: item.prodCode,
+                          batchNo: item.batchNo,
+                          inwardQty: "",
+                          outwardQty: item.qty,
+                          rate: item.rate,
+                          refType: values.docCode,
+                          refNo: values.vouNo,
+                          expDate: item.expDate,
+                          vouDate: values.vouDate,
+                        };
+                      } else if (item.docCode == "SR") {
+                        return {
+                          userCompanyCode: userCompanyCode,
+                          prodCode: item.prodCode,
+                          batchNo: item.batchNo,
+                          inwardQty: item.qty,
+                          outwardQty: "",
+                          rate: item.rate,
+                          refType: values.docCode,
+                          refNo: values.vouNo,
+                          expDate: item.expDate,
+                          vouDate: values.vouDate,
+                        };
+                      }
+                    });
+                    const initialLedger = {
+                      userCompanyCode: userCompanyCode,
+                      vouNo: values.vouNo,
+                      branchCode: values.branchCode,
+                      docCode: values.docCode,
+                      finYear: values.finYear,
+                      manualNo: values.manualNo,
+                      vouDate: values.vouDate,
+                      srNo: "",
+                      acCode: "",
+                      debit: "",
+                      credit: "",
+                      narration: "",
+                      refType: values.refType,
+                      refNo: values.refNo,
+                      vouStatus: "Clear",
+                      checkNo: "",
+                      favouringName: "",
+                      entryBy: userCode,
+                      entryOn: new Date(),
+                    };
+                    let cgstTotal = 0;
+                    let sgstTotal = 0;
+                    let igstTotal = 0;
+                    let cessTotal = 0;
+                    let qrTotal = 0;
+                    let discountTotal = 0;
+                    newItems.map((newItem) => {
+                      cgstTotal += Number(newItem.cgst);
+                      sgstTotal += Number(newItem.sgst);
+                      igstTotal += Number(newItem.igst);
+                      cessTotal += Number(newItem.cess);
+                      qrTotal += Number(newItem.qr);
+                      discountTotal += Number(newItem.discount);
+                    });
+                    const newVoucher = {
+                      ...values,
+                      cgstTotal: cgstTotal,
+                      sgstTotal: sgstTotal,
+                      igstTotal: igstTotal,
+                      cessTotal: cessTotal,
+                      qrTotal: qrTotal,
+                      discountTotal: discountTotal,
+                      billDis: Number(values.billDis),
+                      roundOff: Number(values.roundOff),
+                    };
+                    let finalArr;
+                    if (
+                      values.docCode == "SI" ||
+                      values.docCode == "PR" ||
+                      values.docCode == "DN"
+                    ) {
+                      finalArr = ledgerArr
+                        .filter((item) => newVoucher[item.feild] !== 0)
+                        .map((item) => {
+                          if (item.type == "credit") {
+                            return {
+                              ...initialLedger,
+                              acCode:
+                                item.code == "partyCode"
+                                  ? newVoucher.partyCode
+                                  : item.code,
+                              credit: newVoucher[item.feild],
+                              narration: getFullForm(values),
+                            };
+                          } else if (item.type == "debit") {
+                            return {
+                              ...initialLedger,
+                              acCode:
+                                item.code == "partyCode"
+                                  ? newVoucher.partyCode
+                                  : item.code,
+                              debit: newVoucher[item.feild],
+                              narration: getFullForm(values),
+                            };
+                          } else {
+                            if (newVoucher[item.feild] >= 0)
+                              return {
+                                ...initialLedger,
+                                acCode:
+                                  item.code == "partyCode"
+                                    ? newVoucher.partyCode
+                                    : item.code,
+                                credit: newVoucher[item.feild],
+                                narration: getFullForm(values),
+                              };
+                            else
+                              return {
+                                ...initialLedger,
+                                acCode:
+                                  item.code == "partyCode"
+                                    ? newVoucher.partyCode
+                                    : item.code,
+                                debit: newVoucher[item.feild],
+                                narration: getFullForm(values),
+                              };
+                          }
+                        });
+                    } else {
+                      finalArr = ledgerArr
+                        .filter((item) => newVoucher[item.feild] !== 0)
+                        .map((item) => {
+                          if (item.type == "credit") {
+                            return {
+                              ...initialLedger,
+                              acCode:
+                                item.code == "partyCode"
+                                  ? newVoucher.partyCode
+                                  : item.code,
+                              debit: newVoucher[item.feild],
+                              narration: getFullForm(values),
+                            };
+                          } else if (item.type == "debit") {
+                            return {
+                              ...initialLedger,
+                              acCode:
+                                item.code == "partyCode"
+                                  ? newVoucher.partyCode
+                                  : item.code,
+                              credit: newVoucher[item.feild],
+                              narration: getFullForm(values),
+                            };
+                          } else {
+                            if (newVoucher[item.feild] >= 0)
+                              return {
+                                ...initialLedger,
+                                acCode:
+                                  item.code == "partyCode"
+                                    ? newVoucher.partyCode
+                                    : item.code,
+                                debit: newVoucher[item.feild],
+                                narration: getFullForm(values),
+                              };
+                            else
+                              return {
+                                ...initialLedger,
+                                acCode:
+                                  item.code == "partyCode"
+                                    ? newVoucher.partyCode
+                                    : item.code,
+                                credit: newVoucher[item.feild],
+                                narration: getFullForm(values),
+                              };
+                          }
+                        });
+                    }
+                    database.collection("inv_acLedger").deleteMany(
+                      {
                         userCompanyCode: userCompanyCode,
                         vouNo: values.vouNo,
-                        branchCode: values.branchCode,
-                        docCode: values.docCode,
-                        finYear: values.finYear,
-                        manualNo: values.manualNo,
-                        vouDate: values.vouDate,
-                        srNo: "",
-                        acCode: "",
-                        debit: "",
-                        credit: "",
-                        narration: "",
-                        refType: values.refType,
-                        refNo: values.refNo,
-                        vouStatus: "Clear",
-                        checkNo: "",
-                        favouringName: "",
-                        entryBy: userCode,
-                        entryOn: new Date(),
-                      };
-                      let cgstTotal = 0;
-                      let sgstTotal = 0;
-                      let igstTotal = 0;
-                      let cessTotal = 0;
-                      let qrTotal = 0;
-                      let discountTotal = 0;
-                      newItems.map((newItem) => {
-                        cgstTotal += Number(newItem.cgst);
-                        sgstTotal += Number(newItem.sgst);
-                        igstTotal += Number(newItem.igst);
-                        cessTotal += Number(newItem.cess);
-                        qrTotal += Number(newItem.qr);
-                        discountTotal += Number(newItem.discount);
-                      });
-                      const newVoucher = {
-                        ...values,
-                        cgstTotal: cgstTotal,
-                        sgstTotal: sgstTotal,
-                        igstTotal: igstTotal,
-                        cessTotal: cessTotal,
-                        qrTotal: qrTotal,
-                        discountTotal: discountTotal,
-                        billDis: Number(values.billDis),
-                        roundOff: Number(values.roundOff),
-                      };
-                      let finalArr;
-                      if (
-                        values.docCode == "SI" ||
-                        values.docCode == "PR" ||
-                        values.docCode == "DN"
-                      ) {
-                        finalArr = ledgerArr
-                          .filter((item) => newVoucher[item.feild] !== 0)
-                          .map((item) => {
-                            if (item.type == "credit") {
-                              return {
-                                ...initialLedger,
-                                acCode:
-                                  item.code == "partyCode"
-                                    ? newVoucher.partyCode
-                                    : item.code,
-                                credit: newVoucher[item.feild],
-                                narration: getFullForm(values),
-                              };
-                            } else if (item.type == "debit") {
-                              return {
-                                ...initialLedger,
-                                acCode:
-                                  item.code == "partyCode"
-                                    ? newVoucher.partyCode
-                                    : item.code,
-                                debit: newVoucher[item.feild],
-                                narration: getFullForm(values),
-                              };
-                            } else {
-                              if (newVoucher[item.feild] >= 0)
-                                return {
-                                  ...initialLedger,
-                                  acCode:
-                                    item.code == "partyCode"
-                                      ? newVoucher.partyCode
-                                      : item.code,
-                                  credit: newVoucher[item.feild],
-                                  narration: getFullForm(values),
-                                };
-                              else
-                                return {
-                                  ...initialLedger,
-                                  acCode:
-                                    item.code == "partyCode"
-                                      ? newVoucher.partyCode
-                                      : item.code,
-                                  debit: newVoucher[item.feild],
-                                  narration: getFullForm(values),
-                                };
-                            }
-                          });
-                      } else {
-                        finalArr = ledgerArr
-                          .filter((item) => newVoucher[item.feild] !== 0)
-                          .map((item) => {
-                            if (item.type == "credit") {
-                              return {
-                                ...initialLedger,
-                                acCode:
-                                  item.code == "partyCode"
-                                    ? newVoucher.partyCode
-                                    : item.code,
-                                debit: newVoucher[item.feild],
-                                narration: getFullForm(values),
-                              };
-                            } else if (item.type == "debit") {
-                              return {
-                                ...initialLedger,
-                                acCode:
-                                  item.code == "partyCode"
-                                    ? newVoucher.partyCode
-                                    : item.code,
-                                credit: newVoucher[item.feild],
-                                narration: getFullForm(values),
-                              };
-                            } else {
-                              if (newVoucher[item.feild] >= 0)
-                                return {
-                                  ...initialLedger,
-                                  acCode:
-                                    item.code == "partyCode"
-                                      ? newVoucher.partyCode
-                                      : item.code,
-                                  debit: newVoucher[item.feild],
-                                  narration: getFullForm(values),
-                                };
-                              else
-                                return {
-                                  ...initialLedger,
-                                  acCode:
-                                    item.code == "partyCode"
-                                      ? newVoucher.partyCode
-                                      : item.code,
-                                  credit: newVoucher[item.feild],
-                                  narration: getFullForm(values),
-                                };
-                            }
-                          });
-                      }
-                      database.collection("inv_acLedger").deleteMany(
-                        {
-                          userCompanyCode: userCompanyCode,
-                          vouNo: values.vouNo,
-                        },
-                        (err, data) => {
-                          if (err) {
-                            res.send({ err: err });
-                          } else {
-                            database.collection("inv_stockLedger").deleteMany(
-                              {
-                                userCompanyCode: userCompanyCode,
-                                refNo: values.vouNo,
-                              },
-                              (err, data) => {
-                                if (err) {
-                                  res.send({ err: err });
-                                  console.log("error!", err);
-                                } else {
-                                  database
-                                    .collection("inv_acLedger")
-                                    .insertMany(finalArr, (err, data) => {
-                                      if (err) {
-                                        res.send({ err: err });
-                                      } else {
-                                        database
-                                          .collection("inv_stockLedger")
-                                          .insertMany(
-                                            stockItems,
-                                            (err, data) => {
-                                              if (err) {
-                                                res.send({ err: err });
-                                                console.log("error!", err);
-                                              } else {
-                                                res.send({
-                                                  values: {
-                                                    ...req.body.obj.input,
-                                                  },
-                                                  items: newItems,
-                                                });
-                                              }
-                                            }
-                                          );
-                                      }
-                                    });
-                                }
+                      },
+                      (err, data) => {
+                        if (err) {
+                          res.send({ err: err });
+                        } else {
+                          database.collection("inv_stockLedger").deleteMany(
+                            {
+                              userCompanyCode: userCompanyCode,
+                              refNo: values.vouNo,
+                            },
+                            (err, data) => {
+                              if (err) {
+                                res.send({ err: err });
+                                console.log("error!", err);
+                              } else {
+                                database
+                                  .collection("inv_acLedger")
+                                  .insertMany(finalArr, (err, data) => {
+                                    if (err) {
+                                      res.send({ err: err });
+                                    } else {
+                                      database
+                                        .collection("inv_stockLedger")
+                                        .insertMany(stockItems, (err, data) => {
+                                          if (err) {
+                                            res.send({ err: err });
+                                            console.log("error!", err);
+                                          } else {
+                                            res.send({
+                                              values: {
+                                                ...req.body.obj.input,
+                                              },
+                                              items: newItems,
+                                            });
+                                          }
+                                        });
+                                    }
+                                  });
                               }
-                            );
-                          }
+                            }
+                          );
                         }
-                      );
-                    }
+                      }
+                    );
                   }
                 });
             }
