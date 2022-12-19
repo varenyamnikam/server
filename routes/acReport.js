@@ -26,7 +26,7 @@ function calc(arr) {
 
     credit = credit + Number(item.credit);
   });
-  return credit - debit;
+  return debit - credit;
 }
 function calcInOut(arr) {
   let credit = 0;
@@ -49,8 +49,14 @@ router.get("/", verifyToken, (req, res) => {
   const endDate = req.query.endDate;
   const yearCode = req.query.yearCode;
   const branchCode = req.query.branchCode;
+  const currentAcCode = req.query.acCode;
 
-  console.log("post request recieved at stockReports", startDate, endDate);
+  console.log(
+    "post request recieved at stockReports",
+    startDate,
+    endDate,
+    currentAcCode
+  );
   database
     .collection("mst_accounts")
     .find({ userCompanyCode: userCompanyCode })
@@ -70,11 +76,11 @@ router.get("/", verifyToken, (req, res) => {
               mst_accounts.map((acc, i) => {
                 let prev = transactions.filter(
                   (item) =>
-                    new Date(item.vouDate).setHours(0, 0, 0, 0) <=
+                    new Date(item.vouDate).setHours(0, 0, 0, 0) <
                       new Date(startDate).setHours(0, 0, 0, 0) &&
                     item.vouNo.slice(6, 10) == yearCode &&
                     item.vouNo.slice(0, 4) == branchCode &&
-                    item.acCode == acc.acCode
+                    item.acCode == currentAcCode
                 );
                 if (prev.length !== 0) openingBalance = calc(prev);
                 else {
@@ -115,12 +121,14 @@ router.get("/", verifyToken, (req, res) => {
                   new Date(item.vouDate).setHours(0, 0, 0, 0) <=
                     new Date(endDate).setHours(0, 0, 0, 0) &&
                   item.vouNo.slice(6, 10) == yearCode &&
-                  item.vouNo.slice(0, 4) == branchCode
+                  item.vouNo.slice(0, 4) == branchCode &&
+                  item.acCode == currentAcCode
                 );
               });
               res.json({
-                records: records,
+                openingBalance: openingBalance,
                 transactions: monthlyTrans,
+                mst_accounts: mst_accounts,
               });
             }
           });
