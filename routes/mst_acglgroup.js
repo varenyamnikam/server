@@ -25,7 +25,16 @@ router.get("/", verifyToken, (req, res) => {
   console.log("post request recieved at get accounts");
   database
     .collection("mst_acglgroup")
-    .find({ userCompanyCode: userCompanyCode })
+    .find({
+      $or: [
+        {
+          userCompanyCode: userCompanyCode,
+        },
+        {
+          userCompanyCode: "all",
+        },
+      ],
+    })
     .toArray((err, mst_acglgroup) => {
       if (err) {
         res.send({ err: err });

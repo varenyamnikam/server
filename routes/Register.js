@@ -48,8 +48,8 @@ const end =
 const initialFinValues = {
   yearCode: start + end,
   finYear: "20" + start + "-" + end,
-  yearStartDate: new Date(new Date().getFullYear() + 1, 3, 1),
-  yearEndDate: new Date(new Date().getFullYear(), 2, 31),
+  yearStartDate: new Date(new Date().getFullYear(), 3, 1),
+  yearEndDate: new Date(new Date().getFullYear() + 1, 2, 31),
   isDefaultYear: "Y",
   isClosed: "N",
 };
@@ -68,7 +68,21 @@ const userValues = {
   userName: "",
   userCode: "1001",
 };
-
+const initialAcType = {
+  acType: "",
+  acTypeStatus: "Active",
+  acTypeFor: "General",
+  userCompanyCode: "",
+  entryBy: "1001",
+  entryOn: new Date(),
+};
+const defaultAcTypes = [
+  "Retailer",
+  "Wholesaler",
+  "Permanant",
+  "System",
+  "General",
+];
 function generatePassword() {
   var length = 8,
     charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
@@ -82,6 +96,8 @@ function generatePassword() {
 router.post("/", verifyToken, (req, res) => {
   console.log("at Register*******");
   const values = req.body.values;
+  const input = req.body.input;
+
   const date = new Date();
   date.setMonth(date.getMonth() + 1);
   database
@@ -167,11 +183,48 @@ router.post("/", verifyToken, (req, res) => {
                                   parseInt(max) + 1,
                                   parseInt(max + 1)
                                 );
-                                res.send({
-                                  companyCode: parseInt(max) + 1,
-                                  userCode: 1001,
-                                  password: pswrd,
-                                });
+                                database
+                                  .collection("adm_softwareSettings")
+                                  .insertOne(
+                                    {
+                                      ...input,
+                                      userCompanyCode: JSON.stringify(
+                                        parseInt(max) + 1
+                                      ),
+                                      entryBy: "1001",
+                                      entryOn: new Date(),
+                                    },
+                                    (err, data) => {
+                                      if (err) {
+                                        res.send({ err: err });
+                                      } else {
+                                        database
+                                          .collection("adm_softwareSettings")
+                                          .insertOne(
+                                            {
+                                              ...input,
+                                              userCompanyCode: JSON.stringify(
+                                                parseInt(max) + 1
+                                              ),
+                                              entryBy: "1001",
+                                              entryOn: new Date(),
+                                            },
+                                            (err, data) => {
+                                              if (err) {
+                                                res.send({ err: err });
+                                              } else {
+                                                res.send({
+                                                  companyCode:
+                                                    parseInt(max) + 1,
+                                                  userCode: 1001,
+                                                  password: pswrd,
+                                                });
+                                              }
+                                            }
+                                          );
+                                      }
+                                    }
+                                  );
                               }
                             }
                           );

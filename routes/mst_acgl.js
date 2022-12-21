@@ -23,10 +23,19 @@ router.get("/", verifyToken, (req, res) => {
   const userCompanyCode = req.query.userCompanyCode;
   const userCode = req.query.userCode;
 
-  console.log("request recieved at get acgl");
+  console.log("request recieved at get acgl hi");
   database
     .collection("mst_acTypes")
-    .find({ userCompanyCode: userCompanyCode })
+    .find({
+      $or: [
+        {
+          userCompanyCode: userCompanyCode,
+        },
+        {
+          userCompanyCode: "all",
+        },
+      ],
+    })
     .toArray((err, mst_acTypes) => {
       if (err) {
         res.send({ err: err });
@@ -53,7 +62,7 @@ router.put("/", verifyToken, (req, res) => {
       if (err) {
         res.send({ err: err });
       } else {
-        console.log(data);       
+        console.log(data);
 
         res.status(200).send({ id: data.insertedId });
       }
@@ -100,7 +109,8 @@ router.post("/", verifyToken, (req, res) => {
       (err, data) => {
         if (err) {
           res.send({ err: err });
-        } else {        res.send({});
+        } else {
+          res.send({});
 
           console.log(values.acType + "deleted");
         }

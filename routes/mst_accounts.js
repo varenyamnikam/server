@@ -25,28 +25,64 @@ router.get("/", verifyToken, (req, res) => {
   console.log("post request recieved at get accounts");
   database
     .collection("mst_accounts")
-    .find({ userCompanyCode: userCompanyCode })
+    .find({
+      $or: [
+        {
+          userCompanyCode: userCompanyCode,
+        },
+        {
+          userCompanyCode: "all",
+        },
+      ],
+    })
     .toArray((err, mst_accounts) => {
       if (err) {
         res.send({ err: err });
       } else {
         database
           .collection("mst_firmType")
-          .find({})
+          .find({
+            $or: [
+              {
+                userCompanyCode: userCompanyCode,
+              },
+              {
+                userCompanyCode: "all",
+              },
+            ],
+          })
           .toArray((err, mst_firmType) => {
             if (err) {
               res.send({ err: err });
             } else {
               database
                 .collection("mst_acTypes")
-                .find({ userCompanyCode: userCompanyCode })
+                .find({
+                  $or: [
+                    {
+                      userCompanyCode: userCompanyCode,
+                    },
+                    {
+                      userCompanyCode: "all",
+                    },
+                  ],
+                })
                 .toArray((err, mst_acTypes) => {
                   if (err) {
                     res.send({ err: err });
                   } else {
                     database
                       .collection("mst_acglgroup")
-                      .find({ userCompanyCode: userCompanyCode })
+                      .find({
+                        $or: [
+                          {
+                            userCompanyCode: userCompanyCode,
+                          },
+                          {
+                            userCompanyCode: "all",
+                          },
+                        ],
+                      })
                       .toArray((err, mst_acGroup) => {
                         if (err) {
                           res.send({ err: err });
@@ -173,7 +209,8 @@ router.post("/", verifyToken, (req, res) => {
       (err, data) => {
         if (err) {
           res.send({ err: err });
-        } else {        res.send({});
+        } else {
+          res.send({});
 
           console.log(values.acCode + "deleted");
         }
