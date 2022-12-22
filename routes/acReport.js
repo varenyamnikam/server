@@ -72,48 +72,17 @@ router.get("/", verifyToken, (req, res) => {
             if (err) {
               res.send({ err: err });
             } else {
-              let records = [];
-              mst_accounts.map((acc, i) => {
-                let prev = transactions.filter(
-                  (item) =>
-                    new Date(item.vouDate).setHours(0, 0, 0, 0) <
-                      new Date(startDate).setHours(0, 0, 0, 0) &&
-                    item.vouNo.slice(6, 10) == yearCode &&
-                    item.vouNo.slice(0, 4) == branchCode &&
-                    item.acCode == currentAcCode
-                );
-                if (prev.length !== 0) openingBalance = calc(prev);
-                else {
-                  openingBalance = 0;
-                }
-                let currentBalance = transactions.filter((item) => {
-                  return (
-                    new Date(item.vouDate).setHours(0, 0, 0, 0) >=
-                      new Date(startDate).setHours(0, 0, 0, 0) &&
-                    new Date(item.vouDate).setHours(0, 0, 0, 0) <=
-                      new Date(endDate).setHours(0, 0, 0, 0) &&
-                    item.vouNo.slice(6, 10) == yearCode &&
-                    item.vouNo.slice(0, 4) == branchCode &&
-                    item.acCode == acc.acCode
-                  );
-                });
-                console.log(
-                  "prev =>",
-                  prev,
-                  openingBalance,
-                  "current=>",
-                  currentBalance
-                );
-                let inwardOutward = calcInOut(currentBalance);
-                records[i] = {
-                  acCode: acc.acCode,
-                  openingBalance: openingBalance,
-                  credit: inwardOutward.credit,
-                  debit: inwardOutward.debit,
-                  closingBalance: inwardOutward.credit - inwardOutward.debit,
-                  acName: acc.acName,
-                };
-              });
+              let prev = transactions.filter(
+                (item) =>
+                  new Date(item.vouDate).setHours(0, 0, 0, 0) <
+                    new Date(startDate).setHours(0, 0, 0, 0) &&
+                  item.vouNo.slice(6, 10) == yearCode &&
+                  item.vouNo.slice(0, 4) == branchCode &&
+                  item.acCode == currentAcCode
+              );
+              let openingBalance = 0;
+              if (prev.length !== 0) openingBalance = calc(prev);
+
               let monthlyTrans = transactions.filter((item) => {
                 return (
                   new Date(item.vouDate).setHours(0, 0, 0, 0) >=

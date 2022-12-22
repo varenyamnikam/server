@@ -66,6 +66,7 @@ const soft = require("./routes/soft");
 const accounting = require("./routes/ac_accounting");
 const stockReport = require("./routes/stockReport");
 const acReport = require("./routes/acReport");
+const bankReport = require("./routes/bankReport");
 
 app.use("/api/register", register);
 app.use("/api/login", login);
@@ -92,6 +93,7 @@ app.use("/api/batch", inv_batch);
 app.use("/api/accounting", accounting);
 app.use("/api/stockReport", stockReport);
 app.use("/api/acReport", acReport);
+app.use("/api/bankReport", bankReport);
 
 // app.post("/api/adm_userrole", verifyToken, (req, res) => {
 //   database

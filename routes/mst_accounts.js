@@ -72,7 +72,7 @@ router.get("/", verifyToken, (req, res) => {
                     res.send({ err: err });
                   } else {
                     database
-                      .collection("mst_acglgroup")
+                      .collection("mst_acGroup")
                       .find({
                         $or: [
                           {

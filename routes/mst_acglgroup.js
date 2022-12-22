@@ -18,13 +18,77 @@ MongoClient.connect(cloudDb, { useNewUrlParser: true }, (error, result) => {
 
   // return callback(error);
 });
+const grp = [
+  "Branch/Division",
+  "Capital Account",
+  "Loans (Liability)",
+  "Suspense Account",
+  "Current Liabilities",
+  "Current Assets",
+  "Fixed Assets",
+  "Investments",
+  "Sales Accounts",
+  "Indirect Expenses",
+  "Indirect Income",
+  "Misc. Expenses",
+  " Purchase Accounts",
+  "Direct Income",
+  "Direct Expenses",
+  "Bank Accounts",
+  "Bank OD A/c",
+  "Cash-in-hand",
+  "Deposits (Asset)",
+  "Duties & Taxes",
+  "Loans & Advances (Asset)",
+  "Provisions",
+  "Reserves & Surplus",
+  "Secured Loans",
+  "Stock-in-hand",
+  "Sundry Creditors",
+  "Sundry Debtors",
+  "Unsecured Loans",
+];
+const prnt = [
+  "Current Assets",
+
+  "Loans (Liability)",
+
+  "Current Assets",
+
+  "Current Assets",
+
+  "Current Liabilities",
+
+  " Current Assets",
+  "Current Liabilities",
+
+  "Capital Account",
+
+  "Loans (Liability)",
+
+  "Current Assets",
+
+  "Current Liabilities",
+
+  "Current Assets",
+
+  "Loans (Liability)",
+];
+const initialValues = {
+  acGroupCode: "",
+  parentGroupName: "",
+  parentGroupCode: "",
+  acGroupName: "",
+  acGroupStatus: "Active",
+};
+
 router.get("/", verifyToken, (req, res) => {
   const userCompanyCode = req.query.userCompanyCode;
   const userCode = req.query.userCode;
 
-  console.log("post request recieved at get accounts");
+  console.log("post request recieved at get accountsGroup");
   database
-    .collection("mst_acglgroup")
+    .collection("mst_acGroup")
     .find({
       $or: [
         {
@@ -35,16 +99,16 @@ router.get("/", verifyToken, (req, res) => {
         },
       ],
     })
-    .toArray((err, mst_acglgroup) => {
+    .toArray((err, mst_acGroup) => {
       if (err) {
         res.send({ err: err });
       } else {
-        res.json({ mst_acglgroup: mst_acglgroup });
+        res.json({ mst_acglgroup: mst_acGroup });
       }
     });
 });
 router.put("/", verifyToken, (req, res) => {
-  console.log("at put of /mst_acglgroup*******");
+  console.log("at put of /mst_acGroup*******");
   const userCompanyCode = req.query.userCompanyCode;
   const userCode = req.query.userCode;
   console.log(userCompanyCode);
@@ -52,14 +116,14 @@ router.put("/", verifyToken, (req, res) => {
   delete values.parentGroupName;
 
   database
-    .collection("mst_acglgroup")
+    .collection("mst_acGroup")
     .find({ userCompanyCode: userCompanyCode })
-    .toArray((err, mst_acglgroup) => {
+    .toArray((err, mst_acGroup) => {
       if (err) {
         res.send({ err: err });
       } else {
         let usrcdarr = [];
-        mst_acglgroup.map((item) => {
+        mst_acGroup.map((item) => {
           usrcdarr.push(parseInt(item.acGroupCode.match(/(\d+)/)[0]));
         });
         function getMax(usrcdarr) {
@@ -77,7 +141,7 @@ router.put("/", verifyToken, (req, res) => {
           ? (max = 10000)
           : (max = parseInt(getMax(usrcdarr)));
         console.log(usrcdarr, max);
-        database.collection("mst_acglgroup").insertOne(
+        database.collection("mst_acGroup").insertOne(
           {
             ...values,
             acGroupCode: "A" + JSON.stringify(parseInt(max) + 1),
@@ -103,7 +167,7 @@ router.put("/", verifyToken, (req, res) => {
     });
 });
 router.patch("/", verifyToken, (req, res) => {
-  console.log("at patch of /mst_acglgroup*******");
+  console.log("at patch of /mst_acGroup*******");
   const userCompanyCode = req.query.userCompanyCode;
   const userCode = req.query.userCode;
   console.log(userCode);
@@ -111,7 +175,7 @@ router.patch("/", verifyToken, (req, res) => {
   const acGroupCode = values.acGroupCode;
   delete values._id;
   delete values.parentGroupName;
-  database.collection("mst_acglgroup").updateOne(
+  database.collection("mst_acGroup").updateOne(
     { acGroupCode: acGroupCode, userCompanyCode: userCompanyCode },
     {
       $set: {
@@ -136,7 +200,7 @@ router.post("/", verifyToken, (req, res) => {
   const userCompanyCode = req.query.userCompanyCode;
   const values = req.body.item;
   database
-    .collection("mst_acglgroup")
+    .collection("mst_acGroup")
     .deleteOne(
       { userCompanyCode: userCompanyCode, acGroupCode: values.acGroupCode },
       (err, data) => {
