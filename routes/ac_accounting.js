@@ -56,7 +56,7 @@ router.get("/", verifyToken, (req, res) => {
   const branchCode = req.query.branchCode;
 
   console.log(
-    "post request recieved at get ledger",
+    "get request recieved at get accounting",
     date,
     yearCode,
     branchCode

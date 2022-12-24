@@ -138,7 +138,8 @@ router.post("/", (req, res) => {
                                                             finYear.yearStartDate;
                                                           user.defaultYearEnd =
                                                             finYear.yearEndDate;
-
+                                                          user.defaultFinYear =
+                                                            finYear.finYear;
                                                           res.send({
                                                             auth: true,
                                                             token: token,

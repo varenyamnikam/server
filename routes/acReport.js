@@ -28,20 +28,14 @@ function calc(arr) {
   });
   return debit - credit;
 }
-function calcInOut(arr) {
-  let credit = 0;
-  let debit = 0;
-  if (arr.length !== 0) {
-    console.log(arr);
-    arr.map((item) => {
-      debit = debit + Number(item.debit);
-
-      credit = credit + Number(item.credit);
-    });
-  }
-  return { credit: credit, debit: debit };
-}
-
+const arr = [
+  "Propritor",
+  "Partnership",
+  "Cooperative",
+  "Private Limited",
+  "Limited",
+  "Government",
+];
 router.get("/", verifyToken, (req, res) => {
   const userCompanyCode = req.query.userCompanyCode;
   const userCode = req.query.userCode;
@@ -59,7 +53,16 @@ router.get("/", verifyToken, (req, res) => {
   );
   database
     .collection("mst_accounts")
-    .find({ userCompanyCode: userCompanyCode })
+    .find({
+      $or: [
+        {
+          userCompanyCode: userCompanyCode,
+        },
+        {
+          userCompanyCode: "all",
+        },
+      ],
+    })
     .toArray((err, mst_accounts) => {
       if (err) {
         res.send({ err: err });

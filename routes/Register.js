@@ -198,30 +198,11 @@ router.post("/", verifyToken, (req, res) => {
                                       if (err) {
                                         res.send({ err: err });
                                       } else {
-                                        database
-                                          .collection("adm_softwareSettings")
-                                          .insertOne(
-                                            {
-                                              ...input,
-                                              userCompanyCode: JSON.stringify(
-                                                parseInt(max) + 1
-                                              ),
-                                              entryBy: "1001",
-                                              entryOn: new Date(),
-                                            },
-                                            (err, data) => {
-                                              if (err) {
-                                                res.send({ err: err });
-                                              } else {
-                                                res.send({
-                                                  companyCode:
-                                                    parseInt(max) + 1,
-                                                  userCode: 1001,
-                                                  password: pswrd,
-                                                });
-                                              }
-                                            }
-                                          );
+                                        res.send({
+                                          companyCode: parseInt(max) + 1,
+                                          userCode: 1001,
+                                          password: pswrd,
+                                        });
                                       }
                                     }
                                   );

@@ -18,17 +18,74 @@ MongoClient.connect(cloudDb, { useNewUrlParser: true }, (error, result) => {
 
   // return callback(error);
 });
-const ledgerArr = [
+const ledgerArrIn = [
   { code: "partyCode", feild: "netAmount", type: "debit" },
-  { code: "G1001", feild: "qrTotal", type: "credit" },
-  { code: "G1002", feild: "discountTotal", type: "debit" },
-  { code: "G1003", feild: "cgstTotal", type: "credit" },
-  { code: "G1004", feild: "sgstTotal", type: "credit" },
-  { code: "G1005", feild: "igstTotal", type: "credit" },
-  { code: "G1006", feild: "cessTotal", type: "credit" },
-  { code: "G1007", feild: "billDis", type: "debit" },
-  { code: "G1008", feild: "roundOff", type: "both" },
+  { code: "G10002", feild: "qrTotal", type: "credit" },
+  { code: "G10004", feild: "discountTotal", type: "debit" },
+  { code: "G10008", feild: "cgstTotal", type: "credit" },
+  { code: "G10009", feild: "sgstTotal", type: "credit" },
+  { code: "G10010", feild: "igstTotal", type: "credit" },
+  { code: "G10012", feild: "cessTotal", type: "credit" },
+  { code: "G10004", feild: "billDis", type: "debit" },
+  { code: "G10014", feild: "roundOff", type: "both" },
 ];
+const ledgerArrOut = [
+  { code: "partyCode", feild: "netAmount", type: "debit" },
+  { code: "G10002", feild: "qrTotal", type: "credit" },
+  { code: "G10004", feild: "discountTotal", type: "debit" },
+  { code: "G10005", feild: "cgstTotal", type: "credit" },
+  { code: "G10006", feild: "sgstTotal", type: "credit" },
+  { code: "G10007", feild: "igstTotal", type: "credit" },
+  { code: "G10011", feild: "cessTotal", type: "credit" },
+  { code: "G10004", feild: "billDis", type: "debit" },
+  { code: "G10014", feild: "roundOff", type: "both" },
+];
+
+const acc = [
+  {
+    code: "G10001",
+  },
+  {
+    code: "G10002",
+  },
+  {
+    code: "G10003",
+  },
+  {
+    code: "G10004",
+  },
+  {
+    code: "G10005",
+  },
+  {
+    code: "G10006",
+  },
+  {
+    code: "G10007",
+  },
+  {
+    code: "G10008",
+  },
+  {
+    code: "G10009",
+  },
+  {
+    code: "G10010",
+  },
+  {
+    code: "G10011",
+  },
+  {
+    code: "G10012",
+  },
+  {
+    code: "G10013",
+  },
+  {
+    code: "G10014",
+  },
+];
+
 const fullForms = [
   { short: "QT", full: "Quotation" },
   { short: "SO", full: "Sale Order" },
@@ -67,14 +124,22 @@ router.get("/", verifyToken, (req, res) => {
   console.log("post request recieved at get ledger", startDate);
   database
     .collection("mst_accounts")
-    .find({ userCompanyCode: userCompanyCode })
+    .find({       $or: [
+      {
+        userCompanyCode: userCompanyCode,
+      },
+      {
+        userCompanyCode: "all",
+      },
+    ],
+})
     .toArray((err, mst_accounts) => {
       if (err) {
         res.send({ err: err });
       } else {
         database
           .collection("mst_prodMaster")
-          .find({})
+          .find({userCompanyCode: userCompanyCode})
           .toArray((err, mst_prodMaster) => {
             if (err) {
               res.send({ err: err });
@@ -267,6 +332,7 @@ router.put("/", verifyToken, (req, res) => {
                     vouNo: values.vouNo + max,
                     userCompanyCode: userCompanyCode,
                     docCode: values.docCode,
+                    vouDate: values.vouDate,
                   };
                 });
               if (newItems.length !== 0) {
@@ -326,11 +392,13 @@ router.put("/", verifyToken, (req, res) => {
                       };
                       let finalArr;
                       if (
+                        //sale
                         values.docCode == "SI" ||
+                        values.docCode == "DC" ||
                         values.docCode == "PR" ||
                         values.docCode == "DN"
                       ) {
-                        finalArr = ledgerArr
+                        finalArr = ledgerArrOut
                           .filter((item) => newVoucher[item.feild] !== 0)
                           .map((item) => {
                             if (item.type == "credit") {
@@ -377,7 +445,7 @@ router.put("/", verifyToken, (req, res) => {
                             }
                           });
                       } else {
-                        finalArr = ledgerArr
+                        finalArr = ledgerArrIn
                           .filter((item) => newVoucher[item.feild] !== 0)
                           .map((item) => {
                             if (item.type == "credit") {
@@ -489,6 +557,7 @@ router.patch("/", verifyToken, (req, res) => {
               vouNo: values.vouNo,
               userCompanyCode: userCompanyCode,
               docCode: values.docCode,
+              vouDate: values.vouDate,
             };
           });
         database.collection("inv_voucherItems").deleteMany(
@@ -563,7 +632,7 @@ router.patch("/", verifyToken, (req, res) => {
                       values.docCode == "PR" ||
                       values.docCode == "DN"
                     ) {
-                      finalArr = ledgerArr
+                      finalArr = ledgerArrOut
                         .filter((item) => newVoucher[item.feild] !== 0)
                         .map((item) => {
                           if (item.type == "credit") {
@@ -610,7 +679,7 @@ router.patch("/", verifyToken, (req, res) => {
                           }
                         });
                     } else {
-                      finalArr = ledgerArr
+                      finalArr = ledgerArrIn
                         .filter((item) => newVoucher[item.feild] !== 0)
                         .map((item) => {
                           if (item.type == "credit") {

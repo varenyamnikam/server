@@ -19,34 +19,146 @@ MongoClient.connect(cloudDb, { useNewUrlParser: true }, (error, result) => {
   // return callback(error);
 });
 const grp = [
-  "Branch/Division",
-  "Capital Account",
-  "Loans (Liability)",
-  "Suspense Account",
-  "Current Liabilities",
-  "Current Assets",
-  "Fixed Assets",
-  "Investments",
-  "Sales Accounts",
-  "Indirect Expenses",
-  "Indirect Income",
-  "Misc. Expenses",
-  " Purchase Accounts",
-  "Direct Income",
-  "Direct Expenses",
-  "Bank Accounts",
-  "Bank OD A/c",
-  "Cash-in-hand",
-  "Deposits (Asset)",
-  "Duties & Taxes",
-  "Loans & Advances (Asset)",
-  "Provisions",
-  "Reserves & Surplus",
-  "Secured Loans",
-  "Stock-in-hand",
-  "Sundry Creditors",
-  "Sundry Debtors",
-  "Unsecured Loans",
+  {
+    acGroupCode: "A1001",
+    parentGroupCode: "",
+    acGroupName: "Branch/Division",
+  },
+  {
+    acGroupCode: "A1002",
+    parentGroupCode: "",
+    acGroupName: "Capital Account",
+  },
+  {
+    acGroupCode: "A1003",
+    parentGroupCode: "",
+    acGroupName: "Loans (Liability)",
+  },
+  {
+    acGroupCode: "A1004",
+    parentGroupCode: "",
+    acGroupName: "Suspense Account",
+  },
+  {
+    acGroupCode: "A1005",
+    parentGroupCode: "",
+    acGroupName: "Current Liabilities",
+  },
+  {
+    acGroupCode: "A1006",
+    parentGroupCode: "",
+    acGroupName: "Current Assets",
+  },
+  {
+    acGroupCode: "A1007",
+    parentGroupCode: "",
+    acGroupName: "Fixed Assets",
+  },
+  {
+    acGroupCode: "A1008",
+    parentGroupCode: "",
+    acGroupName: "Investments",
+  },
+  {
+    acGroupCode: "A1009",
+    parentGroupCode: "",
+    acGroupName: "Sales Accounts",
+  },
+  {
+    acGroupCode: "A1010",
+    parentGroupCode: "",
+    acGroupName: "Indirect Expenses",
+  },
+  {
+    acGroupCode: "A1011",
+    parentGroupCode: "",
+    acGroupName: "Indirect Income",
+  },
+  {
+    acGroupCode: "A1012",
+    parentGroupCode: "",
+    acGroupName: "Misc. Expenses",
+  },
+  {
+    acGroupCode: "A1013",
+    parentGroupCode: "",
+    acGroupName: "Purchase Accounts",
+  },
+  {
+    acGroupCode: "A1014",
+    parentGroupCode: "",
+    acGroupName: "Direct Income",
+  },
+  {
+    acGroupCode: "A1015",
+    parentGroupCode: "",
+    acGroupName: "Direct Expenses",
+  },
+  {
+    acGroupCode: "A1016",
+    acGroupName: "Bank Accounts",
+    parentGroupCode: "Current Assets",
+  },
+  {
+    acGroupCode: "A1017",
+    acGroupName: "Bank OD A/c",
+    parentGroupCode: "Loans (Liability)",
+  },
+  {
+    acGroupCode: "A1018",
+    acGroupName: "Cash-in-hand",
+    parentGroupCode: "Current Assets",
+  },
+  {
+    acGroupCode: "A1019",
+    acGroupName: "Deposits (Asset)",
+    parentGroupCode: "Current Assets",
+  },
+  {
+    acGroupCode: "A1020",
+    acGroupName: "Duties & Taxes",
+    parentGroupCode: "Current Liabilities",
+  },
+  {
+    acGroupCode: "A1021",
+    acGroupName: "Loans & Advances (Asset)",
+    parentGroupCode: "Current Assets",
+  },
+  {
+    acGroupCode: "A1022",
+    acGroupName: "Provisions",
+    parentGroupCode: "Current Liabilities",
+  },
+  {
+    acGroupCode: "A1023",
+    acGroupName: "Reserves & Surplus",
+    parentGroupCode: "Capital Account",
+  },
+  {
+    acGroupCode: "A1024",
+    acGroupName: "Secured Loans",
+    parentGroupCode: "Loans (Liability)",
+  },
+  {
+    acGroupCode: "A1025",
+    acGroupName: "Stock-in-hand",
+    parentGroupCode: "Current Assets",
+  },
+  {
+    acGroupCode: "A1026",
+    acGroupName: "Sundry Creditors",
+    parentGroupCode: "Current Liabilities",
+  },
+  {
+    acGroupCode: "A1027",
+    acGroupName: "Sundry Debtors",
+    parentGroupCode: "Current Assets",
+  },
+  {
+    acGroupCode: "A1028",
+    acGroupName: "Unsecured Loans",
+    parentGroupCode: "Loans (Liability)",
+  },
 ];
 const prnt = [
   "Current Assets",
@@ -103,6 +215,18 @@ router.get("/", verifyToken, (req, res) => {
       if (err) {
         res.send({ err: err });
       } else {
+        function getCode(name) {
+          code = "";
+          grp.map((item) => {
+            if (item.acGroupName == name) code = item.acGroupCode;
+          });
+          return code;
+        }
+        const insert = grp.map((item) => ({
+          acGroupCode: item.acGroupCode,
+          acGroupName: item.acGroupName,
+          parentGroupCode: getCode(item.parentGroupCode),
+        }));
         res.json({ mst_acglgroup: mst_acGroup });
       }
     });

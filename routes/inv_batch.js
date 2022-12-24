@@ -71,7 +71,7 @@ router.get("/", verifyToken, (req, res) => {
 
         database
           .collection("mst_prodMaster")
-          .find({})
+          .find({ userCompanyCode: userCompanyCode })
           .toArray((err, mst_prodMaster) => {
             if (err) {
               res.send({ err: err });

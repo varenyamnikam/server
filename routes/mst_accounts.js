@@ -18,11 +18,141 @@ MongoClient.connect(cloudDb, { useNewUrlParser: true }, (error, result) => {
 
   // return callback(error);
 });
+
+const acc = [
+  {
+    acCode: "G10001",
+    acName: "Cash In Hand",
+    acGroupCode: "A1018",
+    acType: "System",
+    preFix: "G",
+    userCompanyCode: "all",
+    acStatus: "Active",
+  },
+  {
+    acCode: "G10002",
+    acName: "Sale A/c",
+    acGroupCode: "A1009",
+    acType: "System",
+    preFix: "G",
+    userCompanyCode: "all",
+    acStatus: "Active",
+  },
+  {
+    acCode: "G10003",
+    acName: "Purchase A/c",
+    acGroupCode: "A1013",
+    acType: "System",
+    preFix: "G",
+    userCompanyCode: "all",
+    acStatus: "Active",
+  },
+  {
+    acCode: "G10004",
+    acName: "Discount A/c",
+    acGroupCode: "A1015",
+    acType: "System",
+    preFix: "G",
+    userCompanyCode: "all",
+    acStatus: "Active",
+  },
+  {
+    acCode: "G10005",
+    acName: "CGST Output",
+    acGroupCode: "A1020",
+    acType: "System",
+    preFix: "G",
+    userCompanyCode: "all",
+    acStatus: "Active",
+  },
+  {
+    acCode: "G10006",
+    acName: "SGST Output",
+    acGroupCode: "A1020",
+    acType: "System",
+    preFix: "G",
+    userCompanyCode: "all",
+    acStatus: "Active",
+  },
+  {
+    acCode: "G10007",
+    acName: "IGST Output",
+    acGroupCode: "A1020",
+    acType: "System",
+    preFix: "G",
+    userCompanyCode: "all",
+    acStatus: "Active",
+  },
+  {
+    acCode: "G10008",
+    acName: "CGST Input",
+    acGroupCode: "A1020",
+    acType: "System",
+    preFix: "G",
+    userCompanyCode: "all",
+    acStatus: "Active",
+  },
+  {
+    acCode: "G10009",
+    acName: "SGST Input",
+    acGroupCode: "A1020",
+    acType: "System",
+    preFix: "G",
+    userCompanyCode: "all",
+    acStatus: "Active",
+  },
+  {
+    acCode: "G10010",
+    acName: "IGST Input",
+    acGroupCode: "A1020",
+    acType: "System",
+    preFix: "G",
+    userCompanyCode: "all",
+    acStatus: "Active",
+  },
+  {
+    acCode: "G10011",
+    acName: "Cess Output",
+    acGroupCode: "A1020",
+    acType: "System",
+    preFix: "G",
+    userCompanyCode: "all",
+    acStatus: "Active",
+  },
+  {
+    acCode: "G10012",
+    acName: "Cess Input",
+    acGroupCode: "A1020",
+    acType: "System",
+    preFix: "G",
+    userCompanyCode: "all",
+    acStatus: "Active",
+  },
+  {
+    acCode: "G10013",
+    acName: "TCS",
+    acGroupCode: "A1020",
+    acType: "System",
+    preFix: "G",
+    userCompanyCode: "all",
+    acStatus: "Active",
+  },
+  {
+    acCode: "G10014",
+    acName: "Round Off",
+    acGroupCode: "A1010",
+    acType: "System",
+    preFix: "G",
+    userCompanyCode: "all",
+    acStatus: "Active",
+  },
+];
 router.get("/", verifyToken, (req, res) => {
   const userCompanyCode = req.query.userCompanyCode;
   const userCode = req.query.userCode;
 
   console.log("post request recieved at get accounts");
+
   database
     .collection("mst_accounts")
     .find({
@@ -87,12 +217,33 @@ router.get("/", verifyToken, (req, res) => {
                         if (err) {
                           res.send({ err: err });
                         } else {
-                          res.json({
-                            mst_accounts: mst_accounts,
-                            mst_firmType: mst_firmType,
-                            mst_acTypes: mst_acTypes,
-                            mst_acGroup: mst_acGroup,
-                          });
+                          database
+                            .collection("mst_mktArea")
+                            .find({ userCompanyCode: userCompanyCode })
+                            .toArray((err, mst_mktArea) => {
+                              if (err) {
+                                res.send({ err: err });
+                                console.log(err);
+                              } else {
+                                database
+                                  .collection("mst_acadress")
+                                  .find({ userCompanyCode: userCompanyCode })
+                                  .toArray((err, acadress) => {
+                                    if (err) {
+                                      res.send({ err: err });
+                                    } else {
+                                      res.json({
+                                        mst_accounts: mst_accounts,
+                                        mst_firmType: mst_firmType,
+                                        mst_acTypes: mst_acTypes,
+                                        mst_acGroup: mst_acGroup,
+                                        mst_mktArea: mst_mktArea,
+                                        acadress: acadress,
+                                      });
+                                    }
+                                  });
+                              }
+                            });
                         }
                       });
                   }
@@ -123,7 +274,7 @@ router.put("/", verifyToken, (req, res) => {
         mst_accounts.map((item) => {
           if (item.preFix == values.preFix) {
             console.log(item);
-            usrcdarr.push(parseInt(item.acCode.match(/(\d+)/)[0]));
+            usrcdarr.push(Number(item.acCode.match(/(\d+)/)[0]));
           }
         });
         function getMax(usrcdarr) {
@@ -136,15 +287,15 @@ router.put("/", verifyToken, (req, res) => {
           console.log(x);
           return x;
         }
-        let max = parseInt(getMax(usrcdarr));
-        parseInt(getMax(usrcdarr)) === 0
-          ? (max = 1000)
-          : (max = parseInt(getMax(usrcdarr)));
+        let max = Number(getMax(usrcdarr));
+        Number(getMax(usrcdarr)) === 0
+          ? (max = 10000)
+          : (max = Number(getMax(usrcdarr)));
         console.log(usrcdarr, max);
         database.collection("mst_accounts").insertOne(
           {
             ...values,
-            acCode: values.preFix + JSON.stringify(parseInt(max) + 1),
+            acCode: values.preFix + JSON.stringify(Number(max) + 1),
             userCompanyCode: userCompanyCode,
             entryBy: userCode,
             entryOn: new Date(),
@@ -153,11 +304,11 @@ router.put("/", verifyToken, (req, res) => {
             if (err) {
               res.send({ err: err });
             } else {
-              console.log(parseInt(max) + 1, parseInt(max + 1));
+              console.log(Number(max) + 1, Number(max + 1));
               res.send({
                 values: {
                   ...values,
-                  acCode: values.preFix + JSON.stringify(parseInt(max) + 1),
+                  acCode: values.preFix + JSON.stringify(Number(max) + 1),
                 },
               });
             }

@@ -16,12 +16,21 @@ MongoClient.connect(cloudDb, { useNewUrlParser: true }, (error, result) => {
 });
 
 router.get("/", verifyToken, (req, res) => {
-  console.log("at /mst_prodTypes*******");
   const userCompanyCode = req.query.userCompanyCode;
 
+  console.log("at /mst_prodTypes*******", userCompanyCode);
   database
     .collection("mst_prodTypes")
-    .find({ userCompanyCode: userCompanyCode })
+    .find({
+      $or: [
+        {
+          userCompanyCode: userCompanyCode,
+        },
+        {
+          userCompanyCode: "all",
+        },
+      ],
+    })
     .toArray((err, mst_prodTypes) => {
       if (err) {
         res.send({ err: err });

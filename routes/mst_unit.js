@@ -22,7 +22,16 @@ router.get("/", verifyToken, (req, res) => {
 
   database
     .collection("mst_unit")
-    .find({ userCompanyCode: userCompanyCode })
+    .find({
+      $or: [
+        {
+          userCompanyCode: userCompanyCode,
+        },
+        {
+          userCompanyCode: "all",
+        },
+      ],
+    })
     .toArray((err, mst_unit) => {
       if (err) {
         res.send({ err: err });

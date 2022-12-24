@@ -33,7 +33,16 @@ router.get("/", verifyToken, (req, res) => {
 
   database
     .collection("mst_prodMaster")
-    .find({ userCompanyCode: userCompanyCode })
+    .find({
+      $or: [
+        {
+          userCompanyCode: userCompanyCode,
+        },
+        {
+          userCompanyCode: "all",
+        },
+      ],
+    })
     .toArray((err, mst_prodMaster) => {
       if (err) {
         res.send({ err: err });
