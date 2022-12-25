@@ -38,15 +38,16 @@ router.get("/", verifyToken, (req, res) => {
   console.log("get request recieved at get dc(stockonly)", startDate, docCode);
   database
     .collection("mst_accounts")
-    .find({       $or: [
-      {
-        userCompanyCode: userCompanyCode,
-      },
-      {
-        userCompanyCode: "all",
-      },
-    ],
-})
+    .find({
+      $or: [
+        {
+          userCompanyCode: userCompanyCode,
+        },
+        {
+          userCompanyCode: "all",
+        },
+      ],
+    })
     .toArray((err, mst_accounts) => {
       if (err) {
         res.send({ err: err });
@@ -539,7 +540,7 @@ router.delete("/", verifyToken, (req, res) => {
     );
 });
 router.post("/", verifyToken, (req, res) => {
-  console.log("at post of /inv_both*******");
+  console.log("at post of /inv_voucher*******");
 
   const userCompanyCode = req.query.userCompanyCode;
   const code = req.body.code;
@@ -549,7 +550,15 @@ router.post("/", verifyToken, (req, res) => {
       if (err) {
         res.send({ err: err });
       } else {
-        res.send({ values: data });
+        database
+          .collection("inv_voucherItems")
+          .find({
+            userCompanyCode: userCompanyCode,
+            vouNo: code,
+          })
+          .toArray((err, inv_voucherItems) => {
+            res.send({ values: data, itemList: inv_voucherItems });
+          });
       }
     });
 });

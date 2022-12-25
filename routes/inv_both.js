@@ -79,15 +79,16 @@ router.get("/", verifyToken, (req, res) => {
   console.log("post request recieved at get both", startDate);
   database
     .collection("mst_accounts")
-    .find({       $or: [
-      {
-        userCompanyCode: userCompanyCode,
-      },
-      {
-        userCompanyCode: "all",
-      },
-    ],
-})
+    .find({
+      $or: [
+        {
+          userCompanyCode: userCompanyCode,
+        },
+        {
+          userCompanyCode: "all",
+        },
+      ],
+    })
     .toArray((err, mst_accounts) => {
       if (err) {
         res.send({ err: err });
@@ -894,7 +895,15 @@ router.post("/", verifyToken, (req, res) => {
       if (err) {
         res.send({ err: err });
       } else {
-        res.send({ values: data });
+        database
+          .collection("inv_voucherItems")
+          .find({
+            userCompanyCode: userCompanyCode,
+            vouNo: code,
+          })
+          .toArray((err, inv_voucherItems) => {
+            res.send({ values: data, itemList: inv_voucherItems });
+          });
       }
     });
 });

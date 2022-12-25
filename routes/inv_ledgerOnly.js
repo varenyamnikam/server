@@ -817,7 +817,15 @@ router.post("/", verifyToken, (req, res) => {
       if (err) {
         res.send({ err: err });
       } else {
-        res.send({ values: data });
+        database
+          .collection("inv_voucherItems")
+          .find({
+            userCompanyCode: userCompanyCode,
+            vouNo: code,
+          })
+          .toArray((err, inv_voucherItems) => {
+            res.send({ values: data, itemList: inv_voucherItems });
+          });
       }
     });
 });
