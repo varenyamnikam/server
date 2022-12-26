@@ -5,7 +5,9 @@ const cloudDb = mongoUtil.connectToServer();
 const databaseName = mongoUtil.getDb();
 console.log(databaseName, cloudDb);
 const MongoClient = require("mongodb").MongoClient;
-
+const accountSid = "AC7370650b1560b1f326015799878dca47";
+const authToken = "0158f8dd4254ad8eb8fb1eaf40223a26";
+const client = require("twilio")(accountSid, authToken);
 MongoClient.connect(cloudDb, { useNewUrlParser: true }, (error, result) => {
   if (error) {
     console.log("eroor!!!");
@@ -203,6 +205,23 @@ router.post("/", verifyToken, (req, res) => {
                                           userCode: 1001,
                                           password: pswrd,
                                         });
+                                        const x = parseInt(max) + 1;
+                                        client.messages
+                                          .create({
+                                            body: `
+                                            companyCode: ${x},
+                                            userCode:${1001},
+                                            password:${pswrd}
+                                            `,
+                                            to: `+91${values.regMobileNo}`, // Text this number
+                                            from: "+12054988742", // From a valid Twilio number
+                                          })
+                                          .then((message) => {
+                                            console.log(message.sid);
+                                            console.log(
+                                              `message sent to +91${values.regMobileNo}`
+                                            );
+                                          });
                                       }
                                     }
                                   );

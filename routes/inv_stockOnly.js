@@ -375,7 +375,7 @@ router.patch("/", verifyToken, (req, res) => {
         const newItems = itemList
           .filter((item) => Number(item.vouSrNo) !== 0)
           .map((item) => {
-            delete item._id;
+            if ("_id" in item) delete item._id;
             return {
               ...item,
               prodName: "",

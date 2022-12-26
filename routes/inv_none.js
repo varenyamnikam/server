@@ -124,15 +124,16 @@ router.get("/", verifyToken, (req, res) => {
   console.log("get request recieved at get none", docCode);
   database
     .collection("mst_accounts")
-    .find({       $or: [
-      {
-        userCompanyCode: userCompanyCode,
-      },
-      {
-        userCompanyCode: "all",
-      },
-    ],
-})
+    .find({
+      $or: [
+        {
+          userCompanyCode: userCompanyCode,
+        },
+        {
+          userCompanyCode: "all",
+        },
+      ],
+    })
     .toArray((err, mst_accounts) => {
       if (err) {
         res.send({ err: err });
@@ -399,7 +400,7 @@ router.patch("/", verifyToken, (req, res) => {
         const newItems = itemList
           .filter((item) => Number(item.vouSrNo) !== 0)
           .map((item) => {
-            delete item._id;
+            if ("_id" in item) delete item._id;
             return {
               ...item,
               prodName: "",

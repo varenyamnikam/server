@@ -23,6 +23,7 @@
     "mongoose": "^6.4.0",
     "mysql": "^2.18.1",
     "nodemon": "^2.0.19",
-    "react-router-dom": "^6.3.0"
+    "react-router-dom": "^6.3.0",
+    "twilio": "^3.84.0"
   }
 }
