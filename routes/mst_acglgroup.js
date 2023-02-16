@@ -241,14 +241,24 @@ router.put("/", verifyToken, (req, res) => {
 
   database
     .collection("mst_acGroup")
-    .find({ userCompanyCode: userCompanyCode })
+    .find({
+      $or: [
+        {
+          userCompanyCode: userCompanyCode,
+        },
+        {
+          userCompanyCode: "all",
+        },
+      ],
+    })
     .toArray((err, mst_acGroup) => {
       if (err) {
         res.send({ err: err });
       } else {
         let usrcdarr = [];
         mst_acGroup.map((item) => {
-          usrcdarr.push(parseInt(item.acGroupCode.match(/(\d+)/)[0]));
+          if (values.groupType[0] == item.groupType[0])
+            usrcdarr.push(Number(item.acGroupCode.match(/(\d+)/)[0]));
         });
         function getMax(usrcdarr) {
           let x = 0;
@@ -257,18 +267,22 @@ router.put("/", verifyToken, (req, res) => {
               x = item;
             }
           });
-          console.log(x);
           return x;
         }
-        let max = parseInt(getMax(usrcdarr));
-        parseInt(getMax(usrcdarr)) === 0
-          ? (max = 10000)
-          : (max = parseInt(getMax(usrcdarr)));
-        console.log(usrcdarr, max);
+        let max = Number(getMax(usrcdarr));
+        Number(getMax(usrcdarr)) === 0
+          ? (max = 1000)
+          : (max = Number(getMax(usrcdarr)));
+        console.log(
+          "==>",
+          usrcdarr,
+          max,
+          values.groupType[0] + JSON.stringify(max + 1)
+        );
         database.collection("mst_acGroup").insertOne(
           {
             ...values,
-            acGroupCode: "A" + JSON.stringify(parseInt(max) + 1),
+            acGroupCode: values.groupType[0] + JSON.stringify(max + 1),
             userCompanyCode: userCompanyCode,
             entryBy: userCode,
             entryOn: new Date(),
@@ -281,7 +295,7 @@ router.put("/", verifyToken, (req, res) => {
               res.status(200).json({
                 values: {
                   ...values,
-                  acGroupCode: "A" + JSON.stringify(parseInt(max) + 1),
+                  acGroupCode: values.groupType[0] + JSON.stringify(max + 1),
                 },
               });
             }

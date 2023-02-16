@@ -121,7 +121,7 @@ router.get("/", verifyToken, (req, res) => {
 
   if (isJson(docCode)) docCode = JSON.parse(docCode);
 
-  console.log("get request recieved at get none", docCode);
+  console.log("get request recieved at  none", docCode);
   database
     .collection("mst_accounts")
     .find({

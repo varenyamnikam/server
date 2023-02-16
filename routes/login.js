@@ -128,6 +128,8 @@ router.post("/", (req, res) => {
                                                             err: err,
                                                           });
                                                         } else {
+                                                          console.log(result);
+
                                                           user.defaultBranchName =
                                                             dBranch[0].branchName;
                                                           console.log(
