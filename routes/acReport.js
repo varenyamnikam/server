@@ -46,7 +46,7 @@ router.get("/", verifyToken, (req, res) => {
   const currentAcCode = req.query.acCode;
 
   console.log(
-    "post request recieved at stockReports",
+    "get request recieved at stockReports",
     startDate,
     endDate,
     currentAcCode
@@ -107,6 +107,45 @@ router.get("/", verifyToken, (req, res) => {
       }
     });
 });
+router.post("/", verifyToken, (req, res) => {
+  const userCompanyCode = req.body.userCompanyCode;
+  const yearCode = req.body.yearCode;
+  const branchCode = req.body.branchCode;
+  const acCode = req.body.acCode;
+
+  console.log(
+    "post request recieved at stockReports",
+    userCompanyCode,
+    yearCode,
+    branchCode,
+    acCode
+  );
+
+  database
+    .collection("inv_acLedger")
+    .find({ userCompanyCode: userCompanyCode })
+    .toArray((err, transactions) => {
+      if (err) {
+        res.send({ err: err });
+      } else {
+        let prev = transactions.filter(
+          (item) =>
+            new Date(item.vouDate).setHours(0, 0, 0, 0) <=
+              new Date().setHours(0, 0, 0, 0) &&
+            item.vouNo.slice(6, 10) == yearCode &&
+            item.vouNo.slice(0, 4) == branchCode &&
+            item.acCode == acCode
+        );
+        let balance = 0;
+        if (prev.length !== 0) balance = calc(prev);
+        console.log(prev, balance);
+        res.json({
+          balance: balance,
+        });
+      }
+    });
+});
+
 module.exports = router;
 
 function verifyToken(req, res, next) {
