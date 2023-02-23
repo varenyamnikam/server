@@ -4,5 +4,6 @@ deploy:
 	git push origin main
 
 build:
-	docker image rm api-server
-	docker build -t api-server .
+	docker image rm varenyam/jiva:api-server
+	docker build -t varenyam/jiva:api-server .
+	docker push varenyam/jiva:api-server
