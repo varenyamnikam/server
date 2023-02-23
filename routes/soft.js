@@ -12,12 +12,12 @@ MongoClient.connect(cloudDb, { useNewUrlParser: true }, (error, result) => {
     console.log(error);
   }
   console.log("Connection Successful");
-  database
-    .collection("adm_softwareSettings")
-    .find({})
-    .toArray((err, users) => {
-      // console.log(users);
-    });
+  // database
+  //   .collection("adm_softwareSettings")
+  //   .find({})
+  //   .toArray((err, users) => {
+  //     // console.log(users);
+  //   });
 
   database = result.db(databaseName);
 });

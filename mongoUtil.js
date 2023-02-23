@@ -1,9 +1,9 @@
 const MongoClient = require("mongodb").MongoClient;
-// const databaseName = "novelseedsdb";
-const databaseName = "jivaErp";
-const cloudDb = "mongodb://localhost:27017/";
-// const cloudDb =
-//   "mongodb+srv://username1001:password1001@cluster0.oeiyl.mongodb.net/?retryWrites=true&w=majority";
+const databaseName = "novelseedsdb";
+// const databaseName = "jivaErp";
+// const cloudDb = "mongodb://127.0.0.1:27017/";
+const cloudDb =
+  "mongodb+srv://username1001:password1001@cluster0.oeiyl.mongodb.net/?retryWrites=true&w=majority";
 // const pswrd = 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;
 
 module.exports = {

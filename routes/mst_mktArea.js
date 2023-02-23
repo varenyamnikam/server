@@ -15,14 +15,22 @@ MongoClient.connect(cloudDb, { useNewUrlParser: true }, (error, result) => {
 
   // database = result.db("jivaErp");
   database = result.db(databaseName);
-
 });
 router.get("/", verifyToken, (req, res) => {
   const userCompanyCode = req.query.userCompanyCode;
   console.log("at get of /mktArea*******");
   database
     .collection("mst_mktArea")
-    .find({ userCompanyCode: userCompanyCode })
+    .find({
+      $or: [
+        {
+          userCompanyCode: userCompanyCode,
+        },
+        {
+          userCompanyCode: "all",
+        },
+      ],
+    })
     .toArray((err, mst_mktArea) => {
       if (err) {
         res.send({ err: err });
@@ -42,9 +50,21 @@ router.put("/", verifyToken, (req, res) => {
   const values = req.body.input;
   const parent = values.parent;
   console.log(values, parent, values.parent);
+  if (parent.mktAreaCode == "5001")
+    database.collection("mst_mktArea").insertOne(parent);
+
   database
     .collection("mst_mktArea")
-    .find({ userCompanyCode: userCompanyCode })
+    .find({
+      $or: [
+        {
+          userCompanyCode: userCompanyCode,
+        },
+        {
+          userCompanyCode: "all",
+        },
+      ],
+    })
     .toArray((err, mst_mktArea) => {
       if (err) {
         res.send({ err: err });
@@ -89,8 +109,8 @@ router.put("/", verifyToken, (req, res) => {
               delete parent._id;
               database.collection("mst_mktArea").updateOne(
                 {
-                  mktAreaCode: values.parentAreaCode,
                   userCompanyCode: userCompanyCode,
+                  mktAreaCode: values.parentAreaCode,
                 },
                 {
                   $set: {
@@ -99,6 +119,7 @@ router.put("/", verifyToken, (req, res) => {
                     updateOn: new Date(),
                   },
                 },
+                { upsert: true },
                 (err, data) => {
                   if (err) {
                     res.send({ err: err });
@@ -106,7 +127,16 @@ router.put("/", verifyToken, (req, res) => {
                   } else {
                     database
                       .collection("mst_mktArea")
-                      .find({ userCompanyCode: userCompanyCode })
+                      .find({
+                        $or: [
+                          {
+                            userCompanyCode: userCompanyCode,
+                          },
+                          {
+                            userCompanyCode: "all",
+                          },
+                        ],
+                      })
                       .toArray((err, mst_mktArea) => {
                         if (err) {
                           res.send({ err: err });
@@ -158,8 +188,16 @@ router.patch("/", verifyToken, (req, res) => {
         database
           .collection("mst_mktArea")
           .find({
-            mktAreaCode: values.mktAreaCode,
-            userCompanyCode: userCompanyCode,
+            $or: [
+              {
+                userCompanyCode: userCompanyCode,
+                mktAreaCode: values.mktAreaCode,
+              },
+              {
+                userCompanyCode: "all",
+                mktAreaCode: values.mktAreaCode,
+              },
+            ],
           })
           .toArray((err, mst_mktArea) => {
             if (err) {
