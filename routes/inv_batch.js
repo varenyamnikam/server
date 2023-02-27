@@ -23,7 +23,6 @@ function calc(arr) {
   let outward = 0;
   arr.map((item) => {
     outward = outward + Number(item.outwardQty);
-
     inward = inward + Number(item.inwardQty);
   });
   return inward - outward;
@@ -52,6 +51,7 @@ router.get("/", verifyToken, (req, res) => {
         if (useBatch == "Yes") {
           const batches = arr.reduce(function (buckets, item) {
             if (!buckets[item.batchNo]) buckets[item.batchNo] = [];
+            console.log(item);
             buckets[item.batchNo].push(item);
             return buckets;
           }, {});

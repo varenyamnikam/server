@@ -127,6 +127,43 @@ router.get("/", verifyToken, (req, res) => {
       }
     });
 });
+router.post("/", verifyToken, (req, res) => {
+  const userCompanyCode = req.body.userCompanyCode;
+  const yearCode = req.body.yearCode;
+  const branchCode = req.body.branchCode;
+  const prodCode = req.body.prodCode;
+
+  console.log(
+    "post request recieved at stockReports",
+    userCompanyCode,
+    yearCode,
+    branchCode,
+    prodCode
+  );
+
+  database
+    .collection("inv_stockLedger")
+    .find({ userCompanyCode: userCompanyCode })
+    .toArray((err, product) => {
+      if (err) {
+        res.send({ err: err });
+      } else {
+        let prev = product.filter(
+          (item) =>
+            item.refNo.slice(6, 10) == yearCode &&
+            item.refNo.slice(0, 4) == branchCode &&
+            item.prodCode == prodCode
+        );
+        let stock = 0;
+        if (prev.length !== 0) stock = calc(prev);
+        console.log(prev, stock);
+        res.json({
+          stock: stock,
+        });
+      }
+    });
+});
+
 module.exports = router;
 
 function verifyToken(req, res, next) {

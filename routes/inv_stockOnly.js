@@ -35,7 +35,11 @@ router.get("/", verifyToken, (req, res) => {
   let docCode = req.query.docCode;
 
   if (isJson(docCode)) docCode = JSON.parse(docCode);
-  console.log("get request recieved at get dc(stockonly)", startDate, docCode);
+  console.log(
+    "get request recieved at get dc(stockonly)",
+    new Date(startDate).toLocaleDateString(),
+    docCode
+  );
   database
     .collection("mst_accounts")
     .find({
