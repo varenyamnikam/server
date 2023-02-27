@@ -5,7 +5,7 @@ const cloudDb = "mongodb://127.0.0.1:27017/";
 // const cloudDb =
 //   "mongodb+srv://username1001:password1001@cluster0.oeiyl.mongodb.net/?retryWrites=true&w=majority";
 // const pswrd = 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;
-
+//const pat = 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
 module.exports = {
   // connectToServer: function (callback) {
   //   MongoClient.connect(cloudDb, { useNewUrlParser: true }, (error, result) => {
