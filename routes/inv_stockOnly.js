@@ -96,25 +96,25 @@ router.get("/", verifyToken, (req, res) => {
                                     } else {
                                       const voucher = inv_voucher.filter(
                                         (item) =>
-                                          new Date(item.vouDate).setHours(
+                                          new Date(item.vouDate).setUTCHours(
                                             0,
                                             0,
                                             0,
                                             0
                                           ) >=
-                                            new Date(startDate).setHours(
+                                            new Date(startDate).setUTCHours(
                                               0,
                                               0,
                                               0,
                                               0
                                             ) &&
-                                          new Date(item.vouDate).setHours(
+                                          new Date(item.vouDate).setUTCHours(
                                             0,
                                             0,
                                             0,
                                             0
                                           ) <=
-                                            new Date(endDate).setHours(
+                                            new Date(endDate).setUTCHours(
                                               0,
                                               0,
                                               0,
@@ -127,7 +127,7 @@ router.get("/", verifyToken, (req, res) => {
                                       //     inv_voucher[
                                       //       inv_voucher.length - 1
                                       //     ].vouDate
-                                      //   ).setHours(0,0,0,0) >= new Date(startDate).setHours(0,0,0,0),
+                                      //   ).setUTCHours(0,0,0,0) >= new Date(startDate).setUTCHours(0,0,0,0),
                                       //   voucher[voucher.length - 1].vouDate
                                       // );
                                       database
@@ -144,24 +144,20 @@ router.get("/", verifyToken, (req, res) => {
                                                 (item) =>
                                                   new Date(
                                                     item.vouDate
-                                                  ).setHours(0, 0, 0, 0) >=
+                                                  ).setUTCHours(0, 0, 0, 0) >=
                                                     new Date(
                                                       startDate
-                                                    ).setHours(0, 0, 0, 0) &&
+                                                    ).setUTCHours(0, 0, 0, 0) &&
                                                   new Date(
                                                     item.vouDate
-                                                  ).setHours(0, 0, 0, 0) <=
-                                                    new Date(endDate).setHours(
-                                                      0,
-                                                      0,
-                                                      0,
-                                                      0
-                                                    )
+                                                  ).setUTCHours(0, 0, 0, 0) <=
+                                                    new Date(
+                                                      endDate
+                                                    ).setUTCHours(0, 0, 0, 0)
                                               );
 
                                             res.json({
                                               mst_accounts: mst_accounts,
-                                              mst_prodMaster: mst_prodMaster,
                                               mst_acadress: mst_acadress,
                                               mst_paymentTerm: mst_paymentTerm,
                                               inv_voucher: voucher,
@@ -184,7 +180,7 @@ router.get("/", verifyToken, (req, res) => {
     });
 });
 router.put("/", verifyToken, (req, res) => {
-  console.log("at put of /inv_both*******");
+  console.log("at put of /inv_stockonly*******");
   const userCompanyCode = req.query.userCompanyCode;
   const userCode = req.query.userCode;
   const useBatch = req.query.useBatch;
@@ -317,6 +313,7 @@ router.put("/", verifyToken, (req, res) => {
                           }
                         });
                         console.log("hi**", stockItems);
+
                         database
                           .collection("inv_stockLedger")
                           .insertMany(stockItems.flat(), (err, data) => {

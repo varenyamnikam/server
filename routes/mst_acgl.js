@@ -105,7 +105,11 @@ router.post("/", verifyToken, (req, res) => {
   database
     .collection("mst_acTypes")
     .deleteOne(
-      { userCompanyCode: userCompanyCode, acType: values.acType },
+      {
+        userCompanyCode: userCompanyCode,
+        acType: values.acType,
+        acTypeFor: values.acTypeFor,
+      },
       (err, data) => {
         if (err) {
           res.send({ err: err });

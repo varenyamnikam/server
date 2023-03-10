@@ -77,8 +77,8 @@ router.get("/", verifyToken, (req, res) => {
             } else {
               let prev = transactions.filter(
                 (item) =>
-                  new Date(item.vouDate).setHours(0, 0, 0, 0) <
-                    new Date(startDate).setHours(0, 0, 0, 0) &&
+                  new Date(item.vouDate).setUTCHours(0, 0, 0, 0) <
+                    new Date(startDate).setUTCHours(0, 0, 0, 0) &&
                   item.vouNo.slice(6, 10) == yearCode &&
                   item.vouNo.slice(0, 4) == branchCode &&
                   item.acCode == currentAcCode
@@ -88,10 +88,10 @@ router.get("/", verifyToken, (req, res) => {
 
               let monthlyTrans = transactions.filter((item) => {
                 return (
-                  new Date(item.vouDate).setHours(0, 0, 0, 0) >=
-                    new Date(startDate).setHours(0, 0, 0, 0) &&
-                  new Date(item.vouDate).setHours(0, 0, 0, 0) <=
-                    new Date(endDate).setHours(0, 0, 0, 0) &&
+                  new Date(item.vouDate).setUTCHours(0, 0, 0, 0) >=
+                    new Date(startDate).setUTCHours(0, 0, 0, 0) &&
+                  new Date(item.vouDate).setUTCHours(0, 0, 0, 0) <=
+                    new Date(endDate).setUTCHours(0, 0, 0, 0) &&
                   item.vouNo.slice(6, 10) == yearCode &&
                   item.vouNo.slice(0, 4) == branchCode &&
                   item.acCode == currentAcCode
@@ -130,8 +130,8 @@ router.post("/", verifyToken, (req, res) => {
       } else {
         let prev = transactions.filter(
           (item) =>
-            new Date(item.vouDate).setHours(0, 0, 0, 0) <=
-              new Date().setHours(0, 0, 0, 0) &&
+            new Date(item.vouDate).setUTCHours(0, 0, 0, 0) <=
+              new Date().setUTCHours(0, 0, 0, 0) &&
             item.vouNo.slice(6, 10) == yearCode &&
             item.vouNo.slice(0, 4) == branchCode &&
             item.acCode == acCode

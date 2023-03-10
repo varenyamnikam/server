@@ -133,25 +133,25 @@ router.get("/", verifyToken, (req, res) => {
                                     } else {
                                       const voucher = inv_voucher.filter(
                                         (item) =>
-                                          new Date(item.vouDate).setHours(
+                                          new Date(item.vouDate).setUTCHours(
                                             0,
                                             0,
                                             0,
                                             0
                                           ) >=
-                                            new Date(startDate).setHours(
+                                            new Date(startDate).setUTCHours(
                                               0,
                                               0,
                                               0,
                                               0
                                             ) &&
-                                          new Date(item.vouDate).setHours(
+                                          new Date(item.vouDate).setUTCHours(
                                             0,
                                             0,
                                             0,
                                             0
                                           ) <=
-                                            new Date(endDate).setHours(
+                                            new Date(endDate).setUTCHours(
                                               0,
                                               0,
                                               0,
@@ -183,23 +183,19 @@ router.get("/", verifyToken, (req, res) => {
                                                 (item) =>
                                                   new Date(
                                                     item.vouDate
-                                                  ).setHours(0, 0, 0, 0) >=
+                                                  ).setUTCHours(0, 0, 0, 0) >=
                                                     new Date(
                                                       startDate
-                                                    ).setHours(0, 0, 0, 0) &&
+                                                    ).setUTCHours(0, 0, 0, 0) &&
                                                   new Date(
                                                     item.vouDate
-                                                  ).setHours(0, 0, 0, 0) <=
-                                                    new Date(endDate).setHours(
-                                                      0,
-                                                      0,
-                                                      0,
-                                                      0
-                                                    )
+                                                  ).setUTCHours(0, 0, 0, 0) <=
+                                                    new Date(
+                                                      endDate
+                                                    ).setUTCHours(0, 0, 0, 0)
                                               );
                                             res.json({
                                               mst_accounts: mst_accounts,
-                                              mst_prodMaster: mst_prodMaster,
                                               mst_acadress: mst_acadress,
                                               mst_paymentTerm: mst_paymentTerm,
                                               inv_voucher: voucher,
@@ -222,10 +218,11 @@ router.get("/", verifyToken, (req, res) => {
     });
 });
 router.put("/", verifyToken, (req, res) => {
-  console.log("at put of /inv_both yes*******");
+  console.log("at put of /inv_both *******");
   const userCompanyCode = req.query.userCompanyCode;
   const userCode = req.query.userCode;
   const values = req.body.obj.input;
+  const useBatch = req.query.useBatch;
   console.log(userCompanyCode, typeof values.vouDate);
   const input = req.body.obj.input;
   const items = req.body.obj.itemList;
@@ -293,6 +290,9 @@ router.put("/", verifyToken, (req, res) => {
                       vouDate: values.vouDate,
                     };
                   });
+
+                console.log("newItems=>", newItems);
+
                 if (newItems.length !== 0) {
                   database
                     .collection("inv_voucherItems")
@@ -302,7 +302,39 @@ router.put("/", verifyToken, (req, res) => {
                         console.log(err);
                       } else {
                         const stockItems = newItems.map((item) => {
-                          if (item.docCode == "PR" || item.docCode == "SI") {
+                          if (item.docCode == "SI") {
+                            if (useBatch == "Yes") {
+                              console.log(item.batchList);
+
+                              return item.batchList.map((b) => {
+                                return {
+                                  userCompanyCode: userCompanyCode,
+                                  prodCode: item.prodCode,
+                                  batchNo: b.batchNo,
+                                  inwardQty: "",
+                                  outwardQty: b.sell,
+                                  rate: item.rate,
+                                  refType: values.docCode,
+                                  refNo: values.vouNo + max,
+                                  expDate: item.expDate,
+                                  vouDate: values.vouDate,
+                                };
+                              });
+                            } else {
+                              return {
+                                userCompanyCode: userCompanyCode,
+                                prodCode: item.prodCode,
+                                batchNo: item.batchNo,
+                                inwardQty: "",
+                                outwardQty: item.qty,
+                                rate: item.rate,
+                                refType: values.docCode,
+                                refNo: values.vouNo + max,
+                                expDate: item.expDate,
+                                vouDate: values.vouDate,
+                              };
+                            }
+                          } else if (item.docCode == "PR") {
                             return {
                               userCompanyCode: userCompanyCode,
                               prodCode: item.prodCode,
@@ -333,6 +365,7 @@ router.put("/", verifyToken, (req, res) => {
                             };
                           }
                         });
+                        console.log(console.trace(), "stockItems", stockItems);
                         const initialLedger = {
                           userCompanyCode: userCompanyCode,
                           vouNo: values.vouNo + max,
@@ -503,30 +536,42 @@ router.put("/", verifyToken, (req, res) => {
                             } else {
                               database
                                 .collection("inv_stockLedger")
-                                .insertMany(stockItems, (err, data) => {
+                                .insertMany(stockItems.flat(), (err, data) => {
                                   if (err) {
                                     res.send({ err: err });
-                                    console.log("error!", err);
+                                    console.log(
+                                      "error! at",
+                                      console.trace(),
+                                      err
+                                    );
                                   } else {
+                                    // res.send({
+                                    //   values: {
+                                    //     ...input,
+                                    //     vouNo: values.vouNo,
+                                    //     vno: max,
+                                    //   },
+                                    //   items: newItems,
+                                    // });
                                   }
                                 });
                             }
                           });
                       }
-                      res.send({
-                        values: {
-                          ...input,
-                          vouNo: values.vouNo + max,
-                          vno: max,
-                        },
-                        items: newItems,
-                      });
                     });
                 }
-              }
+                res.send({
+                  values: {
+                    ...input,
+                    vouNo: values.vouNo + max,
+                    vno: max,
+                  },
+                  items: newItems,
+                });
+              } //
             }
           );
-        }
+        } //
       });
   } catch (err) {
     console.log("line 506", err);
@@ -595,7 +640,38 @@ router.patch("/", verifyToken, (req, res) => {
                     console.log(err, "error");
                   } else {
                     const stockItems = newItems.map((item) => {
-                      if (item.docCode == "PR" || item.docCode == "SI") {
+                      if (item.docCode == "SI") {
+                        if (useBatch == "Yes") {
+                          console.log(item.batchList);
+                          return item.batchList.map((b) => {
+                            return {
+                              userCompanyCode: userCompanyCode,
+                              prodCode: item.prodCode,
+                              batchNo: b.batchNo,
+                              inwardQty: "",
+                              outwardQty: b.sell,
+                              rate: item.rate,
+                              refType: values.docCode,
+                              refNo: values.vouNo,
+                              expDate: item.expDate,
+                              vouDate: values.vouDate,
+                            };
+                          });
+                        } else {
+                          return {
+                            userCompanyCode: userCompanyCode,
+                            prodCode: item.prodCode,
+                            batchNo: item.batchNo,
+                            inwardQty: "",
+                            outwardQty: item.qty,
+                            rate: item.rate,
+                            refType: values.docCode,
+                            refNo: values.vouNo,
+                            expDate: item.expDate,
+                            vouDate: values.vouDate,
+                          };
+                        }
+                      } else if (item.docCode == "PR") {
                         return {
                           userCompanyCode: userCompanyCode,
                           prodCode: item.prodCode,
@@ -608,7 +684,7 @@ router.patch("/", verifyToken, (req, res) => {
                           expDate: item.expDate,
                           vouDate: values.vouDate,
                         };
-                      } else if (item.docCode == "SR") {
+                      } else if (item.docCode == "SR" || item.docCode == "PV") {
                         return {
                           userCompanyCode: userCompanyCode,
                           prodCode: item.prodCode,
@@ -623,6 +699,7 @@ router.patch("/", verifyToken, (req, res) => {
                         };
                       }
                     });
+                    console.log("at patch of", stockItems);
                     const initialLedger = {
                       userCompanyCode: userCompanyCode,
                       vouNo: values.vouNo,
@@ -796,19 +873,19 @@ router.patch("/", verifyToken, (req, res) => {
                                     } else {
                                       database
                                         .collection("inv_stockLedger")
-                                        .insertMany(stockItems, (err, data) => {
-                                          if (err) {
-                                            res.send({ err: err });
-                                            console.log("error!", err);
-                                          } else {
-                                            res.send({
-                                              values: {
+                                        .insertMany(
+                                          stockItems.flat(),
+                                          (err, data) => {
+                                            if (err) {
+                                              res.send({ err: err });
+                                              console.log("error!", err);
+                                            } else {
+                                              console.log({
                                                 ...req.body.obj.input,
-                                              },
-                                              items: newItems,
-                                            });
+                                              });
+                                            }
                                           }
-                                        });
+                                        );
                                     }
                                   });
                               }
@@ -816,7 +893,13 @@ router.patch("/", verifyToken, (req, res) => {
                           );
                         }
                       }
-                    );
+                    ); //
+                    res.send({
+                      values: {
+                        ...req.body.obj.input,
+                      },
+                      items: newItems,
+                    });
                   }
                 });
             }
@@ -885,10 +968,11 @@ router.delete("/", verifyToken, (req, res) => {
     );
 });
 router.post("/", verifyToken, (req, res) => {
-  console.log("at post of /inv_voucher*******");
-
   const userCompanyCode = req.query.userCompanyCode;
   const code = req.body.code;
+
+  console.log("at post of /inv_voucher*******", code);
+
   database
     .collection("inv_voucher")
     .findOne({ userCompanyCode: userCompanyCode, vouNo: code }, (err, data) => {
@@ -921,3 +1005,35 @@ function verifyToken(req, res, next) {
     res.sendStatus(403); //forbidden
   }
 }
+// const stockItems = newItems.map((item) => {
+//   if (item.docCode == "PR" || item.docCode == "SI") {
+//     return {
+//       userCompanyCode: userCompanyCode,
+//       prodCode: item.prodCode,
+//       batchNo: item.batchNo,
+//       inwardQty: "",
+//       outwardQty: item.qty,
+//       rate: item.rate,
+//       refType: values.docCode,
+//       refNo: values.vouNo + max,
+//       expDate: item.expDate,
+//       vouDate: values.vouDate,
+//     };
+//   } else if (
+//     item.docCode == "SR" ||
+//     item.docCode == "PV"
+//   ) {
+//     return {
+//       userCompanyCode: userCompanyCode,
+//       prodCode: item.prodCode,
+//       batchNo: item.batchNo,
+//       inwardQty: item.qty,
+//       outwardQty: "",
+//       rate: item.rate,
+//       refType: values.docCode,
+//       refNo: values.vouNo + max,
+//       expDate: item.expDate,
+//       vouDate: values.vouDate,
+//     };
+//   }
+// });

@@ -33,25 +33,35 @@ const branchValues = {
   adressLine1: "",
   branchCode: "1001",
   branchName: "Main Branch",
-  branchType: "",
+  branchType: "BRANCH",
   stateCode: "",
   stateName: "",
   countryName: "",
   districtName: "",
   talukaName: "",
 };
-const start =
-  String(Array.from(String(new Date().getFullYear()), Number)[2]) +
-  String(Array.from(String(new Date().getFullYear()), Number)[3]);
-const end =
-  String(Array.from(String(new Date().getFullYear() + 1), Number)[2]) +
-  String(Array.from(String(new Date().getFullYear() + 1), Number)[3]);
+let startYear = Array.from(String(new Date().getFullYear()), Number);
+let endYear = Array.from(String(new Date().getFullYear() + 1), Number);
+let startDate = new Date(new Date().getFullYear(), 3, 1);
+let endDate = new Date(new Date().getFullYear() + 1, 2, 31);
+
+if (
+  new Date(new Date().getFullYear(), 3, 1).setUTCHours(0, 0, 0, 0) >
+  new Date().setUTCHours(0, 0, 0, 0)
+) {
+  startYear = Array.from(String(new Date().getFullYear() - 1), Number);
+  endYear = Array.from(String(new Date().getFullYear()), Number);
+  startDate = new Date(new Date().getFullYear() - 1, 3, 1);
+  endDate = new Date(new Date().getFullYear(), 2, 31);
+}
+let start = String(startYear[2]) + String(startYear[3]);
+let end = String(endYear[2]) + String(endYear[3]);
 
 const initialFinValues = {
   yearCode: start + end,
   finYear: "20" + start + "-" + end,
-  yearStartDate: new Date(new Date().getFullYear(), 3, 1),
-  yearEndDate: new Date(new Date().getFullYear() + 1, 2, 31),
+  yearStartDate: startDate,
+  yearEndDate: endDate,
   isDefaultYear: "Y",
   isClosed: "N",
 };
@@ -61,6 +71,8 @@ const userValues = {
   AllowYearChange: "",
   defaultBranchCode: "1001",
   defaultYearCode: initialFinValues.yearCode,
+  defaultBranchName: "",
+  defaultFinYear: initialFinValues.finYear,
   Emailid: "",
   Mobileno: "",
   Password: "",
@@ -149,6 +161,7 @@ router.post("/", verifyToken, (req, res) => {
                   RePassword: pswrd,
                   userCompanyCode: JSON.stringify(parseInt(max) + 1),
                   Mobileno: values.regMobileNo,
+                  Emailid: values.email,
                 },
                 (err, data) => {
                   if (err) {
@@ -157,13 +170,16 @@ router.post("/", verifyToken, (req, res) => {
                     database.collection("adm_branch").insertOne(
                       {
                         ...branchValues,
-                        pinCode: values.pincode,
+                        GSTno: values.gstInNo,
+                        pinCode: values.pinCode,
                         adressLine2: values.adressLine2,
                         adressLine1: values.adressLine1,
                         stateCode: values.stateCode,
                         countryCode: values.countryCode,
                         districtName: values.districtName,
                         talukaName: values.talukaName,
+                        Emailid: values.email,
+                        contactNo: values.contactNo,
                         userCompanyCode: JSON.stringify(parseInt(max) + 1),
                       },
                       (err, data) => {

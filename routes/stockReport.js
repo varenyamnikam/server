@@ -3,15 +3,11 @@ const router = express.Router();
 var mongoUtil = require("../mongoUtil");
 const cloudDb = mongoUtil.connectToServer();
 const databaseName = mongoUtil.getDb();
-console.log(databaseName, cloudDb);
 const MongoClient = require("mongodb").MongoClient;
 
 MongoClient.connect(cloudDb, { useNewUrlParser: true }, (error, result) => {
   if (error) {
-    console.log("eroor!!!");
-    console.log(error);
   }
-  console.log("Connection Successful");
 
   // database = result.db("jivaErp");
   database = result.db(databaseName);
@@ -32,7 +28,6 @@ function calcInOut(arr) {
   let inward = 0;
   let outward = 0;
   if (arr.length !== 0) {
-    console.log(arr);
     arr.map((item) => {
       outward = outward + Number(item.outwardQty);
 
@@ -49,15 +44,22 @@ router.get("/", verifyToken, (req, res) => {
   const endDate = req.query.endDate;
   const yearCode = req.query.yearCode;
   const branchCode = req.query.branchCode;
+  const useBatch = req.query.useBatch;
 
-  console.log("post request recieved at stockReports", startDate, endDate);
+  console.log(
+    "get request recieved at stockReports",
+    startDate,
+    endDate,
+    yearCode,
+    branchCode,
+    useBatch
+  );
   database
     .collection("mst_prodMaster")
     .find({ userCompanyCode: userCompanyCode })
     .toArray((err, mst_prodMaster) => {
       if (err) {
         res.send({ err: err });
-        console.log(err);
       } else {
         database
           .collection("inv_stockLedger")
@@ -67,56 +69,116 @@ router.get("/", verifyToken, (req, res) => {
               res.send({ err: err });
             } else {
               let records = [];
+              let monthlyStock;
               mst_prodMaster.map((prod, i) => {
-                let prev = stock.filter(
-                  (item) =>
-                    new Date(item.vouDate).setHours(0, 0, 0, 0) <=
-                      new Date(startDate).setHours(0, 0, 0, 0) &&
-                    item.refNo.slice(6, 10) == yearCode &&
-                    item.refNo.slice(0, 4) == branchCode &&
-                    item.prodCode == prod.prodCode
-                );
-                if (prev.length !== 0) openingStock = calc(prev);
-                else {
-                  openingStock = 0;
+                function groupBy(arr, property) {
+                  return arr.reduce(function (memo, x) {
+                    if (!memo[x[property]]) {
+                      memo[x[property]] = [];
+                    }
+                    memo[x[property]].push(x);
+                    return memo;
+                  }, {});
                 }
-                let currentStock = stock.filter((item) => {
-                  return (
-                    new Date(item.vouDate).setHours(0, 0, 0, 0) >=
-                      new Date(startDate).setHours(0, 0, 0, 0) &&
-                    new Date(item.vouDate).setHours(0, 0, 0, 0) <=
-                      new Date(endDate).setHours(0, 0, 0, 0) &&
-                    item.refNo.slice(6, 10) == yearCode &&
-                    item.refNo.slice(0, 4) == branchCode &&
-                    item.prodCode == prod.prodCode
+                let o = groupBy(stock, "batchNo");
+                //if batchewise grp can be made
+                if (o && useBatch == "Yes") {
+                  Object.entries(o).map(([batchNo, batchStock]) => {
+                    let prev = batchStock.filter(
+                      (item) =>
+                        new Date(item.vouDate).setUTCHours(0, 0, 0, 0) <=
+                          new Date(startDate).setUTCHours(0, 0, 0, 0) &&
+                        item.refNo.slice(6, 10) == yearCode &&
+                        item.refNo.slice(0, 4) == branchCode &&
+                        item.prodCode == prod.prodCode
+                    );
+                    if (prev.length !== 0) openingStock = calc(prev);
+                    else {
+                      openingStock = 0;
+                    }
+                    let stockOfTheMonth = batchStock.filter((item) => {
+                      return (
+                        new Date(item.vouDate).setUTCHours(0, 0, 0, 0) >=
+                          new Date(startDate).setUTCHours(0, 0, 0, 0) &&
+                        new Date(item.vouDate).setUTCHours(0, 0, 0, 0) <=
+                          new Date(endDate).setUTCHours(0, 0, 0, 0) &&
+                        item.refNo.slice(6, 10) == yearCode &&
+                        item.refNo.slice(0, 4) == branchCode &&
+                        item.prodCode == prod.prodCode
+                      );
+                    });
+                    let inwardOutward = calcInOut(stockOfTheMonth);
+                    records.push({
+                      prodCode: prod.prodCode,
+                      openingStock: openingStock,
+                      currentStock: inwardOutward,
+                      reorderLevel: prod.reorderLevel,
+                      prodName: prod.prodName,
+                      UOM: prod.UOM,
+                      batchNo: batchNo,
+                      stockOfTheMonth: stockOfTheMonth,
+                    });
+                    monthlyStock = batchStock.filter((item) => {
+                      return (
+                        new Date(item.vouDate).setUTCHours(0, 0, 0, 0) >=
+                          new Date(startDate).setUTCHours(0, 0, 0, 0) &&
+                        new Date(item.vouDate).setUTCHours(0, 0, 0, 0) <=
+                          new Date(endDate).setUTCHours(0, 0, 0, 0) &&
+                        item.refNo.slice(6, 10) == yearCode &&
+                        item.refNo.slice(0, 4) == branchCode
+                      );
+                    });
+                  });
+                } //not able to group stock batchwise
+                else {
+                  let prev = stock.filter(
+                    (item) =>
+                      new Date(item.vouDate).setUTCHours(0, 0, 0, 0) <=
+                        new Date(startDate).setUTCHours(0, 0, 0, 0) &&
+                      item.refNo.slice(6, 10) == yearCode &&
+                      item.refNo.slice(0, 4) == branchCode &&
+                      item.prodCode == prod.prodCode
                   );
-                });
-                console.log(
-                  "prev =>",
-                  prev,
-                  openingStock,
-                  "current=>",
-                  currentStock
-                );
-                let inwardOutward = calcInOut(currentStock);
-                records[i] = {
-                  prodCode: prod.prodCode,
-                  openingStock: openingStock,
-                  currentStock: inwardOutward,
-                  reorderLevel: prod.reorderLevel,
-                  prodName: prod.prodName,
-                  UOM: prod.UOM,
-                };
-              });
-              let monthlyStock = stock.filter((item) => {
-                return (
-                  new Date(item.vouDate).setHours(0, 0, 0, 0) >=
-                    new Date(startDate).setHours(0, 0, 0, 0) &&
-                  new Date(item.vouDate).setHours(0, 0, 0, 0) <=
-                    new Date(endDate).setHours(0, 0, 0, 0) &&
-                  item.refNo.slice(6, 10) == yearCode &&
-                  item.refNo.slice(0, 4) == branchCode
-                );
+
+                  if (prev.length !== 0) openingStock = calc(prev);
+                  else {
+                    openingStock = 0;
+                  }
+                  let stockOfTheMonth = stock.filter((item) => {
+                    return (
+                      new Date(item.vouDate).setUTCHours(0, 0, 0, 0) >=
+                        new Date(startDate).setUTCHours(0, 0, 0, 0) &&
+                      new Date(item.vouDate).setUTCHours(0, 0, 0, 0) <=
+                        new Date(endDate).setUTCHours(0, 0, 0, 0) &&
+                      item.refNo.slice(6, 10) == yearCode &&
+                      item.refNo.slice(0, 4) == branchCode &&
+                      item.prodCode == prod.prodCode
+                    );
+                  });
+
+                  //currentstock is batch wise sort it batch wise
+                  let inwardOutward = calcInOut(stockOfTheMonth);
+                  records.push({
+                    prodCode: prod.prodCode,
+                    openingStock: openingStock,
+                    currentStock: inwardOutward,
+                    reorderLevel: prod.reorderLevel,
+                    prodName: prod.prodName,
+                    UOM: prod.UOM,
+                    batchNo: "no batch",
+                    stockOfTheMonth: stockOfTheMonth,
+                  });
+                  monthlyStock = stock.filter((item) => {
+                    return (
+                      new Date(item.vouDate).setUTCHours(0, 0, 0, 0) >=
+                        new Date(startDate).setUTCHours(0, 0, 0, 0) &&
+                      new Date(item.vouDate).setUTCHours(0, 0, 0, 0) <=
+                        new Date(endDate).setUTCHours(0, 0, 0, 0) &&
+                      item.refNo.slice(6, 10) == yearCode &&
+                      item.refNo.slice(0, 4) == branchCode
+                    );
+                  });
+                }
               });
               res.json({
                 records: records,
@@ -156,7 +218,6 @@ router.post("/", verifyToken, (req, res) => {
         );
         let stock = 0;
         if (prev.length !== 0) stock = calc(prev);
-        console.log(prev, stock);
         res.json({
           stock: stock,
         });
@@ -167,7 +228,6 @@ router.post("/", verifyToken, (req, res) => {
 module.exports = router;
 
 function verifyToken(req, res, next) {
-  console.log(req.params);
   const bearerHeader = req.headers["authorization"];
   if (typeof bearerHeader !== "undefined") {
     const bearerToken = bearerHeader.split(" ")[1];

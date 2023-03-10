@@ -33,7 +33,16 @@ router.get("/", verifyToken, (req, res) => {
   const prodCode = req.query.prodCode;
   const vouNo = req.query.vouNo;
   const useBatch = req.query.useBatch;
-  console.log("at /batch*******", userCode, userCompanyCode, req.query);
+  const yearCode = req.query.yearCode;
+  const branchCode = req.query.branchCode;
+
+  console.log(
+    "at /batch*******",
+    userCode,
+    userCompanyCode,
+    yearCode,
+    branchCode
+  );
   database
     .collection("inv_stockLedger")
     .find({ userCompanyCode: userCompanyCode })
@@ -43,7 +52,12 @@ router.get("/", verifyToken, (req, res) => {
         console.log(err);
       } else {
         let raw = arr;
-        arr = arr.filter((item) => item.prodCode == prodCode);
+        arr = arr.filter(
+          (item) =>
+            item.prodCode == prodCode &&
+            item.refNo.slice(6, 10) == yearCode &&
+            item.refNo.slice(0, 4) == branchCode
+        );
         arr = arr.filter(
           (item) => item.refNo !== vouNo || Number(item.qty) == 0
         );
@@ -186,6 +200,23 @@ router.patch("/", verifyToken, (req, res) => {
       }
     }
   );
+});
+router.delete("/", verifyToken, (req, res) => {
+  console.log("at deleteof bacth");
+  const userCompanyCode = req.query.userCompanyCode;
+  console.log(req.body);
+  database
+    .collection("inv_stockLedger")
+    .deleteOne(
+      { userCompanyCode: userCompanyCode, refNo: req.body.refNo },
+      (err, data) => {
+        if (err) {
+          res.send({ err: err });
+        } else {
+          console.log(req.body.refNo + "user deleted");
+        }
+      }
+    );
 });
 
 function verifyToken(req, res, next) {

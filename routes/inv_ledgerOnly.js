@@ -177,25 +177,25 @@ router.get("/", verifyToken, (req, res) => {
                                     } else {
                                       const voucher = inv_voucher.filter(
                                         (item) =>
-                                          new Date(item.vouDate).setHours(
+                                          new Date(item.vouDate).setUTCHours(
                                             0,
                                             0,
                                             0,
                                             0
                                           ) >=
-                                            new Date(startDate).setHours(
+                                            new Date(startDate).setUTCHours(
                                               0,
                                               0,
                                               0,
                                               0
                                             ) &&
-                                          new Date(item.vouDate).setHours(
+                                          new Date(item.vouDate).setUTCHours(
                                             0,
                                             0,
                                             0,
                                             0
                                           ) <=
-                                            new Date(endDate).setHours(
+                                            new Date(endDate).setUTCHours(
                                               0,
                                               0,
                                               0,
@@ -225,14 +225,14 @@ router.get("/", verifyToken, (req, res) => {
                                                 (item) =>
                                                   new Date(
                                                     item.vouDate
-                                                  ).setHours(0, 0, 0, 0) >=
+                                                  ).setUTCHours(0, 0, 0, 0) >=
                                                     new Date(
                                                       startDate
-                                                    ).setHours(0, 0, 0, 0) &&
+                                                    ).setUTCHours(0, 0, 0, 0) &&
                                                   new Date(
                                                     item.vouDate
-                                                  ).setHours(0, 0, 0, 0) <=
-                                                    new Date(endDate).setHours(
+                                                  ).setUTCHours(0, 0, 0, 0) <=
+                                                    new Date(endDate).setUTCHours(
                                                       0,
                                                       0,
                                                       0,

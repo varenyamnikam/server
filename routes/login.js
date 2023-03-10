@@ -76,103 +76,104 @@ router.post("/", (req, res) => {
                     } else {
                       database
                         .collection("adm_branch")
-                        .find({
+                        .findOne({
                           userCompanyCode: userCompanyCode,
                           branchCode: user.defaultBranchCode,
                         })
-                        .toArray((err, dBranch) => {
-                          if (err) {
-                            res.send({ err: err });
-                          } else {
-                            database
-                              .collection("adm_userrights")
-                              .find({
-                                userCompanyCode: userCompanyCode,
-                              })
-                              .toArray((err, adm_userrights) => {
-                                if (err) {
-                                  res.send({ err: err });
-                                } else {
-                                  database
-                                    .collection("adm_softwareSettings")
-                                    .findOne(
-                                      {
-                                        userCompanyCode: userCompanyCode,
-                                      },
-                                      function (err, adm_softwareSettings) {
-                                        if (err) {
-                                          res.send({ err: err });
-                                        } else {
-                                          database
-                                            .collection("adm_finYear")
-                                            .findOne(
-                                              {
-                                                userCompanyCode:
-                                                  userCompanyCode,
-                                                yearCode: user.defaultYearCode,
-                                              },
-                                              function (err, finYear) {
-                                                if (err) {
-                                                  res.send({ err: err });
-                                                } else {
-                                                  database
-                                                    .collection("adm_company")
-                                                    .findOne(
-                                                      {
-                                                        companyCode:
-                                                          userCompanyCode,
-                                                      },
-                                                      function (err, company) {
-                                                        if (err) {
-                                                          res.send({
-                                                            err: err,
-                                                          });
-                                                        } else {
-                                                          console.log(result);
-
-                                                          user.defaultBranchName =
-                                                            dBranch[0].branchName;
-                                                          console.log(
-                                                            adm_softwareSettings
-                                                          );
-                                                          console.log(company);
-                                                          user.defaultYearStart =
-                                                            finYear.yearStartDate;
-                                                          user.defaultYearEnd =
-                                                            finYear.yearEndDate;
-                                                          user.defaultFinYear =
-                                                            finYear.finYear;
-                                                          res.send({
-                                                            auth: true,
-                                                            token: token,
-                                                            result: result,
-                                                            userName: userName,
-                                                            userCompanyCode:
-                                                              userCompanyCode,
-                                                            adm_userrights:
-                                                              adm_userrights,
-                                                            userCompanyName:
-                                                              cmpny[0]
-                                                                .companyName,
-                                                            userCode: userCode,
-                                                            user: user,
-                                                            Status: user.Status,
-                                                            adm_softwareSettings:
-                                                              adm_softwareSettings,
-                                                            company: company,
-                                                          });
-                                                        }
+                        .then((dBranch) => {
+                          database
+                            .collection("adm_userrights")
+                            .find({
+                              userCompanyCode: userCompanyCode,
+                            })
+                            .toArray((err, adm_userrights) => {
+                              if (err) {
+                                res.send({ err: err });
+                              } else {
+                                database
+                                  .collection("adm_softwareSettings")
+                                  .findOne(
+                                    {
+                                      userCompanyCode: userCompanyCode,
+                                    },
+                                    function (err, adm_softwareSettings) {
+                                      if (err) {
+                                        res.send({ err: err });
+                                      } else {
+                                        database
+                                          .collection("adm_finYear")
+                                          .findOne(
+                                            {
+                                              userCompanyCode: userCompanyCode,
+                                              yearCode: user.defaultYearCode,
+                                            },
+                                            function (err, finYear) {
+                                              if (err) {
+                                                res.send({ err: err });
+                                              } else {
+                                                database
+                                                  .collection("adm_company")
+                                                  .findOne(
+                                                    {
+                                                      companyCode:
+                                                        userCompanyCode,
+                                                    },
+                                                    function (err, company) {
+                                                      if (err) {
+                                                        res.send({
+                                                          err: err,
+                                                        });
+                                                      } else {
+                                                        console.log(result);
+                                                        delete user.Password;
+                                                        delete user.RePassword;
+                                                        user.defaultBranchName =
+                                                          dBranch.branchName;
+                                                        user.stateCode =
+                                                          dBranch.stateCode;
+                                                        console.log(
+                                                          adm_softwareSettings
+                                                        );
+                                                        console.log(company);
+                                                        user.defaultYearStart =
+                                                          finYear.yearStartDate;
+                                                        user.defaultYearEnd =
+                                                          finYear.yearEndDate;
+                                                        user.defaultFinYear =
+                                                          finYear.finYear;
+                                                        res.send({
+                                                          auth: true,
+                                                          token: token,
+                                                          result: result,
+                                                          userName: userName,
+                                                          userCompanyCode:
+                                                            userCompanyCode,
+                                                          adm_userrights:
+                                                            adm_userrights,
+                                                          userCompanyName:
+                                                            cmpny[0]
+                                                              .companyName,
+                                                          userCode: userCode,
+                                                          user: user,
+                                                          Status: user.Status,
+                                                          adm_softwareSettings:
+                                                            adm_softwareSettings,
+                                                          company: company,
+                                                        });
                                                       }
-                                                    );
-                                                }
+                                                    }
+                                                  );
                                               }
-                                            );
-                                        }
+                                            }
+                                          );
                                       }
-                                    );
-                                }
-                              });
-                          }
+                                    }
+                                  );
+                              }
+                            });
+                        })
+                        .catch((err) => {
+                          console.log("!error", err);
                         });
                     }
                   });

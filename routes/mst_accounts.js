@@ -265,7 +265,16 @@ router.put("/", verifyToken, (req, res) => {
   delete values.acGroupName;
   database
     .collection("mst_accounts")
-    .find({ userCompanyCode: userCompanyCode })
+    .find({
+      $or: [
+        {
+          userCompanyCode: userCompanyCode,
+        },
+        {
+          userCompanyCode: "all",
+        },
+      ],
+    })
     .toArray((err, mst_accounts) => {
       if (err) {
         res.send({ err: err });
