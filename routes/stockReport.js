@@ -79,10 +79,17 @@ router.get("/", verifyToken, (req, res) => {
                     memo[x[property]].push(x);
                     return memo;
                   }, {});
-                }
-                let o = groupBy(stock, "batchNo");
-                //if batchewise grp can be made
-                if (o && useBatch == "Yes") {
+                } // problematic piece of code
+                const prodStock = stock.filter(
+                  (item) => item.prodCode == prod.prodCode
+                );
+                let o = groupBy(prodStock, "batchNo");
+                console.log("ProdCode", prod.prodCode, o && useBatch == "Yes");
+                const canGrpBatchWise = Object.entries(o).length !== 0;
+                //canGrpBatchWise will be 0 if no batches found
+                //of product in stockLedger
+                if (canGrpBatchWise && useBatch == "Yes") {
+                  //if batchewise grp can be made
                   Object.entries(o).map(([batchNo, batchStock]) => {
                     let prev = batchStock.filter(
                       (item) =>
@@ -165,7 +172,7 @@ router.get("/", verifyToken, (req, res) => {
                     reorderLevel: prod.reorderLevel,
                     prodName: prod.prodName,
                     UOM: prod.UOM,
-                    batchNo: "no batch",
+                    batchNo: "null",
                     stockOfTheMonth: stockOfTheMonth,
                   });
                   monthlyStock = stock.filter((item) => {

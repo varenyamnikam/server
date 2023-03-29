@@ -145,6 +145,59 @@ router.post("/", verifyToken, (req, res) => {
       }
     });
 });
+router.patch("/", verifyToken, (req, res) => {
+  const userCompanyCode = req.query.userCompanyCode;
+  const userCode = req.query.userCode;
+  const startDate = req.query.startDate;
+  const endDate = req.query.endDate;
+  const yearCode = req.query.yearCode;
+  const branchCode = req.query.branchCode;
+  const docCodes = req.body.docCodes;
+  console.log(req.body.docCodes);
+  console.log("patch request recieved at stockReports", startDate, endDate);
+  database
+    .collection("mst_accounts")
+    .find({
+      $or: [
+        {
+          userCompanyCode: userCompanyCode,
+        },
+        {
+          userCompanyCode: "all",
+        },
+      ],
+    })
+    .toArray((err, mst_accounts) => {
+      if (err) {
+        res.send({ err: err });
+        console.log(err);
+      } else {
+        database
+          .collection("inv_acLedger")
+          .find({ userCompanyCode: userCompanyCode })
+          .toArray((err, inv_acLedger) => {
+            if (err) {
+              res.send({ err: err });
+            } else {
+              let acLedger = inv_acLedger.filter(
+                (item) =>
+                  new Date(item.vouDate).setUTCHours(0, 0, 0, 0) >=
+                    new Date(startDate).setUTCHours(0, 0, 0, 0) &&
+                  new Date(item.vouDate).setUTCHours(0, 0, 0, 0) <=
+                    new Date(endDate).setUTCHours(0, 0, 0, 0) &&
+                  item.vouNo.slice(6, 10) == yearCode &&
+                  item.vouNo.slice(0, 4) == branchCode &&
+                  docCodes.includes(item.docCode)
+              );
+              res.json({
+                acLedger: acLedger,
+                mst_accounts: mst_accounts,
+              });
+            }
+          });
+      }
+    });
+});
 
 module.exports = router;
 

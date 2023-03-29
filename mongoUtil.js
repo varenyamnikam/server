@@ -18,12 +18,12 @@ module.exports = {
   //     // database = result.db("jivaErp");
   //     database = result.db("novelseedsdb");
 
-  //     database
-  //       .collection("adm_usermaster")
-  //       .find({})
-  //       .toArray((err, users) => {
-  //         console.log(users[0]);
-  //       });
+  // database
+  //   .collection("adm_usermaster")
+  //   .find({})
+  //   .toArray((err, users) => {
+  //     console.log(users[0]);
+  //   });
   //     // return callback(error);
   //   });
   //   console.log()

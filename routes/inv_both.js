@@ -56,7 +56,7 @@ const fullForms = [
 ];
 function getFullForm(voucher) {
   const full = fullForms.find((item) => item.short == voucher.docCode);
-  return full.full + "No" + `${voucher.vouNo}`;
+  return full.full + "No" + ` ${voucher.vouNo}`;
 }
 function isJson(str) {
   try {

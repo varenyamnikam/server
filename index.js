@@ -10,7 +10,7 @@ const fs = require("fs");
 // var database;
 let result1 = [];
 const router = express.Router();
-var mongoUtil = require("./mongoUtil");
+// var mongoUtil = require("./mongoUtil");
 // dotenv.config({ path: "./config.env" });
 const PORT = process.env.PORT || 3001;
 app.use(express.json());
@@ -68,6 +68,7 @@ const stockReport = require("./routes/stockReport");
 const acReport = require("./routes/acReport");
 const bankReport = require("./routes/bankReport");
 const inv_none = require("./routes/inv_none");
+const trialBalance = require("./routes/trialBalance");
 
 app.use("/api/register", register);
 app.use("/api/login", login);
@@ -96,6 +97,7 @@ app.use("/api/stockReport", stockReport);
 app.use("/api/acReport", acReport);
 app.use("/api/bankReport", bankReport);
 app.use("/api/inv_none", inv_none);
+app.use("/api/trialBalance", trialBalance);
 
 // app.post("/api/adm_userrole", verifyToken, (req, res) => {
 //   database
@@ -700,11 +702,12 @@ function getDirectoriesRecursive(srcpath) {
 }
 app.get("*", (req, res) => {
   console.log(
-    "at 404 ****************",
-    getDirectoriesRecursive(__dirname).slice(-10)
+    "at 404 ****************"
+    // getDirectoriesRecursive(__dirname).slice(-10)
   );
   console.log(req.url);
-  res.sendFile(path.resolve(__dirname, "build", "index.html"));
+  // res.sendFile(path.resolve(__dirname, "build", "index.html"));
+  res.send({ res: "at 404" });
 });
 
 function verifyToken(req, res, next) {

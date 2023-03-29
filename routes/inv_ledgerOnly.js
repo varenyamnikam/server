@@ -102,7 +102,7 @@ const fullForms = [
 ];
 function getFullForm(voucher) {
   const full = fullForms.find((item) => item.short == voucher.docCode);
-  return full.full + "No" + `${voucher.vouNo}`;
+  return full.full + "No" + ` ${voucher.vouNo}`;
 }
 function isJson(str) {
   try {
@@ -124,22 +124,23 @@ router.get("/", verifyToken, (req, res) => {
   console.log("post request recieved at get ledger", startDate);
   database
     .collection("mst_accounts")
-    .find({       $or: [
-      {
-        userCompanyCode: userCompanyCode,
-      },
-      {
-        userCompanyCode: "all",
-      },
-    ],
-})
+    .find({
+      $or: [
+        {
+          userCompanyCode: userCompanyCode,
+        },
+        {
+          userCompanyCode: "all",
+        },
+      ],
+    })
     .toArray((err, mst_accounts) => {
       if (err) {
         res.send({ err: err });
       } else {
         database
           .collection("mst_prodMaster")
-          .find({userCompanyCode: userCompanyCode})
+          .find({ userCompanyCode: userCompanyCode })
           .toArray((err, mst_prodMaster) => {
             if (err) {
               res.send({ err: err });
@@ -232,12 +233,9 @@ router.get("/", verifyToken, (req, res) => {
                                                   new Date(
                                                     item.vouDate
                                                   ).setUTCHours(0, 0, 0, 0) <=
-                                                    new Date(endDate).setUTCHours(
-                                                      0,
-                                                      0,
-                                                      0,
-                                                      0
-                                                    )
+                                                    new Date(
+                                                      endDate
+                                                    ).setUTCHours(0, 0, 0, 0)
                                               );
 
                                             res.json({
@@ -550,7 +548,7 @@ router.patch("/", verifyToken, (req, res) => {
         const newItems = itemList
           .filter((item) => Number(item.vouSrNo) !== 0)
           .map((item) => {
-            if ("_id" in item) delete item._id
+            if ("_id" in item) delete item._id;
             return {
               ...item,
               prodName: "",
