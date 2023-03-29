@@ -7,7 +7,7 @@ const app = express();
 const dotenv = require("dotenv");
 const path = require("path");
 const fs = require("fs");
-var mongoUtil = require("../mongoUtil");
+var mongoUtil = require("./mongoUtil");
 const cloudDb = mongoUtil.connectToServer();
 const databaseName = mongoUtil.getDb();
 
