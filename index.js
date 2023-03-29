@@ -724,6 +724,10 @@ app.get("*", (req, res) => {
   console.log(req.url);
   res.send({ res: "at 404" });
 });
+app.listen(PORT, () => {
+  console.log(`listening at porta ${PORT}`);
+});
+
 // 3001 "mongodb://localhost:27017"
 MongoClient.connect(cloudDb, { useNewUrlParser: true }, (error, result) => {
   if (error) {
@@ -735,9 +739,6 @@ MongoClient.connect(cloudDb, { useNewUrlParser: true }, (error, result) => {
 
   // database = result.db("jivaErp");
   database = result.db(databaseName);
-  app.listen(PORT, () => {
-    console.log(`listening at porta ${PORT}`);
-  });
   // res.sendFile(path.resolve(__dirname, "build", "index.html"));
   // database
   //   .collection("adm_usermaster")
