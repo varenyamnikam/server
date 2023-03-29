@@ -14,13 +14,13 @@ const router = express.Router();
 // dotenv.config({ path: "./config.env" });
 const PORT = process.env.PORT || 3001;
 app.use(express.json());
-app.use(
-  cors({
-    origin: [PORT],
-    methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
-    credentials: true,
-  })
-);
+// app.use(
+//   cors({
+//     origin: [PORT],
+//     methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
+//     credentials: true,
+//   })
+// );
 
 if ((process.env.NODE_ENV = "production")) {
   app.use(express.static("static"));
@@ -721,7 +721,22 @@ function verifyToken(req, res, next) {
   }
 }
 // 3001 "mongodb://localhost:27017"
-app.listen(PORT, () => {});
+MongoClient.connect(cloudDb, { useNewUrlParser: true }, (error, result) => {
+  if (error) {
+    console.trace();
+    console.log("eroor!!!!!!!!!!");
+    console.log(error);
+  }
+  console.log("Connection Successful");
+
+  // database = result.db("jivaErp");
+  database = result.db(databaseName);
+  app.listen(PORT, () => {
+    console.log(`listening at port ${PORT}`);
+  });
+
+  // return callback(error);
+});
 
 /// mongoose
 //   .connect(cloudDb, {
