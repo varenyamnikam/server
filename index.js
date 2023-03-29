@@ -721,6 +721,8 @@ app.get("*", (req, res) => {
     PORT
     // getDirectoriesRecursive(__dirname).slice(-10)
   );
+  console.log(req.url);
+  res.send({ res: "at 404", usr: users[0].userName });
 });
 // 3001 "mongodb://localhost:27017"
 MongoClient.connect(cloudDb, { useNewUrlParser: true }, (error, result) => {
@@ -736,14 +738,13 @@ MongoClient.connect(cloudDb, { useNewUrlParser: true }, (error, result) => {
   app.listen(PORT, () => {
     console.log(`listening at porta ${PORT}`);
   });
-  console.log(req.url);
   // res.sendFile(path.resolve(__dirname, "build", "index.html"));
-  database
-    .collection("adm_usermaster")
-    .find({})
-    .toArray((err, users) => {
-      res.send({ res: "at 404", usr: users[0].userName });
-    });
+  // database
+  //   .collection("adm_usermaster")
+  //   .find({})
+  //   .toArray((err, users) => {
+  //     console.log(user)
+  //   });
 
   // return callback(error);
 });
