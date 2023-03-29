@@ -704,15 +704,6 @@ function getDirectoriesRecursive(srcpath) {
     ...flatten(getDirectories(srcpath).map(getDirectoriesRecursive)),
   ];
 }
-app.get("*", (req, res) => {
-  console.log(
-    "at 404 ****************"
-    // getDirectoriesRecursive(__dirname).slice(-10)
-  );
-  console.log(req.url);
-  // res.sendFile(path.resolve(__dirname, "build", "index.html"));
-  res.send({ res: "at 404" });
-});
 
 function verifyToken(req, res, next) {
   const bearerHeader = req.headers["authorization"];
@@ -736,7 +727,22 @@ MongoClient.connect(cloudDb, { useNewUrlParser: true }, (error, result) => {
   // database = result.db("jivaErp");
   database = result.db(databaseName);
   app.listen(PORT, () => {
-    console.log(`listening at port ${PORT}`);
+    console.log(`listening at porta ${PORT}`);
+  });
+  app.get("*", (req, res) => {
+    console.log(
+      "at 404 ****************",
+      PORT
+      // getDirectoriesRecursive(__dirname).slice(-10)
+    );
+    console.log(req.url);
+    // res.sendFile(path.resolve(__dirname, "build", "index.html"));
+    database
+      .collection("adm_usermaster")
+      .find({})
+      .toArray((err, users) => {
+        res.send({ res: "at 404", usr: users[0].userName });
+      });
   });
 
   // return callback(error);
