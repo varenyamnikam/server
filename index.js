@@ -722,7 +722,7 @@ app.get("*", (req, res) => {
     // getDirectoriesRecursive(__dirname).slice(-10)
   );
   console.log(req.url);
-  res.send({ res: "at 404", usr: users[0].userName });
+  res.send({ res: "at 404" });
 });
 // 3001 "mongodb://localhost:27017"
 MongoClient.connect(cloudDb, { useNewUrlParser: true }, (error, result) => {
