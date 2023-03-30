@@ -7,10 +7,6 @@ const app = express();
 const dotenv = require("dotenv");
 const path = require("path");
 const fs = require("fs");
-var mongoUtil = require("./mongoUtil");
-const cloudDb = mongoUtil.connectToServer();
-const databaseName = mongoUtil.getDb();
-
 // var database;
 let result1 = [];
 const router = express.Router();
@@ -18,13 +14,13 @@ const router = express.Router();
 // dotenv.config({ path: "./config.env" });
 const PORT = process.env.PORT || 3001;
 app.use(express.json());
-// app.use(
-//   cors({
-//     origin: [PORT],
-//     methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
-//     credentials: true,
-//   })
-// );
+app.use(
+  cors({
+    origin: [PORT],
+    methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 
 if ((process.env.NODE_ENV = "production")) {
   app.use(express.static("static"));
@@ -704,6 +700,14 @@ function getDirectoriesRecursive(srcpath) {
     ...flatten(getDirectories(srcpath).map(getDirectoriesRecursive)),
   ];
 }
+app.get("*", (req, res) => {
+  console.log(
+    "at 404 ****************",
+    getDirectoriesRecursive(__dirname).slice(-10)
+  );
+  console.log(req.url);
+  res.sendFile(path.resolve(__dirname, "build", "index.html"));
+});
 
 function verifyToken(req, res, next) {
   const bearerHeader = req.headers["authorization"];
@@ -715,40 +719,8 @@ function verifyToken(req, res, next) {
     res.sendStatus(403); //forbidden
   }
 }
-app.get("*", (req, res) => {
-  console.log(
-    "at 404 ****************",
-    PORT
-    // getDirectoriesRecursive(__dirname).slice(-10)
-  );
-  console.log(req.url);
-  res.send({ res: "at 404" });
-});
-app.listen(PORT, () => {
-  console.log(`listening at porta ${PORT}`);
-});
-
 // 3001 "mongodb://localhost:27017"
-MongoClient.connect(cloudDb, { useNewUrlParser: true }, (error, result) => {
-  if (error) {
-    console.trace();
-    console.log("eroor!!!!!!!!!!");
-    console.log(error);
-  }
-  console.log("Connection Successful");
-
-  // database = result.db("jivaErp");
-  database = result.db(databaseName);
-  // res.sendFile(path.resolve(__dirname, "build", "index.html"));
-  // database
-  //   .collection("adm_usermaster")
-  //   .find({})
-  //   .toArray((err, users) => {
-  //     console.log(user)
-  //   });
-
-  // return callback(error);
-});
+app.listen(PORT, () => {});
 
 /// mongoose
 //   .connect(cloudDb, {
