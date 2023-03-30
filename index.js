@@ -706,7 +706,7 @@ app.get("*", (req, res) => {
     getDirectoriesRecursive(__dirname).slice(-10)
   );
   console.log(req.url);
-  res.sendFile(path.resolve(__dirname, "build", "index.html"));
+  res.sendFile("./build/index.html");
 });
 
 function verifyToken(req, res, next) {
