@@ -26,7 +26,7 @@ if ((process.env.NODE_ENV = "production")) {
   app.use(express.static("static"));
 }
 // app.get("*", function (req, res) {
-//   res.sendFile(path.join(__dirname, "../public", "index.html"));
+// res.sendFile(path.join(__dirname, "../public", "index.html"));
 //   console.log("at 404 ****************");
 // });
 
@@ -706,7 +706,9 @@ app.get("*", (req, res) => {
     getDirectoriesRecursive(__dirname).slice(-10)
   );
   console.log(req.url);
-  res.sendFile("./build/index.html");
+  res.sendFile(path.join(__dirname, "./build", "index.html"));
+
+  // res.sendFile("./build/index.html");
 });
 
 function verifyToken(req, res, next) {
